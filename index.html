@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <!--
+    THESIS: Make the playable match-three board the whole experience, not a menu-led level map.
+    OWN-WORLD: A midnight conservatory of ink-blue sky, orbital markings, mint starlight, and lacquered jewel pieces.
+    STORY: Find a legal swap, grow cascades and line-clearing blooms, and gather 900 stardust in 24 turns.
+    FIRST VIEWPORT: A centered title sits above one 8-by-8 board; score, goal progress, and moves sit directly above it.
+    FORM: The product-native, experience-first puzzle board is the staging; its playable 8-by-8 grid leads the surface.
+  -->
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#111421">
+    <meta name="description" content="Gather starlight in Astra Grove, a little match-three puzzle beneath the night sky.">
+    <title>Astra Grove — A starlight puzzle</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <div class="sky" aria-hidden="true">
+      <span class="star star--one"></span>
+      <span class="star star--two"></span>
+      <span class="star star--three"></span>
+      <span class="orbit orbit--one"></span>
+      <span class="orbit orbit--two"></span>
+      <span class="glow glow--left"></span>
+      <span class="glow glow--right"></span>
+    </div>
+
+    <main class="game-shell">
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="Astra Grove home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 40 40" fill="none"><path d="M20 3.5 23.8 15l11.7-3.8-7.2 10.1 10.2 7.1-12.2.1L23.8 40 20 28.5 8.3 32.3l7.2-10.1L5.3 15.1l12.2-.1L20 3.5Z" fill="currentColor"/><circle cx="20" cy="21.5" r="4.1" fill="#121521"/></svg>
+          </span>
+          <span class="brand-name">ASTRA <span>GROVE</span></span>
+        </a>
+        <div class="topbar-actions">
+          <div class="best-score"><span class="best-star" aria-hidden="true">✦</span><span>BEST <strong id="best-score">0</strong></span></div>
+          <button class="icon-button sound-toggle" id="sound-toggle" type="button" aria-label="Turn sound off">
+            <svg class="sound-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Zm4 4a4 4 0 0 1 0 6m2-9a7 7 0 0 1 0 12"/></svg>
+            <svg class="sound-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Zm5 4 5 6m0-6-5 6"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="intro" aria-labelledby="game-title">
+        <h1 id="game-title">Astra <span>Grove</span></h1>
+        <p>Match the magic. Gather the starlight.</p>
+      </section>
+
+      <section class="game-panel" aria-label="Astra Grove game">
+        <div class="dashboard">
+          <div class="score-block">
+            <span class="stat-label">STARDUST</span>
+            <span class="score-value" id="score" aria-live="polite">0000</span>
+          </div>
+          <div class="goal-block" aria-label="Score progress">
+            <div class="goal-caption"><span>GROVE GOAL</span><span id="goal-label">0 / 900</span></div>
+            <div class="progress-track" role="progressbar" id="goal-progress" aria-label="Grove goal progress" aria-valuemin="0" aria-valuemax="900" aria-valuenow="0"><span id="progress-fill"></span></div>
+          </div>
+          <div class="moves-block">
+            <span class="stat-label">MOVES</span>
+            <span class="moves-value" id="moves">24</span>
+          </div>
+        </div>
+
+        <div class="board-heading">
+          <span class="board-heading-label"><span class="live-dot"></span> THE CANOPY</span>
+          <span class="hint-label" id="hint">Find a little magic <span aria-hidden="true">✦</span></span>
+        </div>
+        <div class="board-wrap">
+          <div class="board" id="board" aria-label="Puzzle board"></div>
+          <div class="game-over" id="game-over" hidden>
+            <div class="result-sparkle" aria-hidden="true">✦</div>
+            <p class="result-kicker" id="result-kicker">THE GROVE IS GLOWING</p>
+            <h2 id="result-title">Beautifully done.</h2>
+            <p class="result-copy" id="result-copy">You gathered enough starlight.</p>
+            <button class="play-again" id="play-again" type="button">Play again <span aria-hidden="true">↗</span></button>
+          </div>
+        </div>
+        <div class="panel-footer">
+          <span><span class="footer-spark" aria-hidden="true">✧</span> Match 3 or more to gather stardust</span>
+          <button class="reset-button" id="reset-button" type="button"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 8A6.5 6.5 0 1 0 17 11m-.5-7v4h-4"/></svg> New game</button>
+        </div>
+      </section>
+
+      <p class="footnote">A pocket-sized pause beneath the stars <span aria-hidden="true">✦</span></p>
+      <div class="sr-only" id="announcer" aria-live="assertive" aria-atomic="true"></div>
+    </main>
+  </body>
+</html>

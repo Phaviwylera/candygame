@@ -11,17 +11,9 @@ import {
   swapTiles
 } from "./game.js";
 import { prepareGameBreakAd, showGameBreakAd } from "./ads.js";
+import { pieceIcons } from "./pieces.js";
 
 const pieceNames = ["Moonbud", "Comet", "Bloom", "Prism", "Leaflight", "Sunseed"];
-const pieceIcons = [
-  '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M25.8 5.2a15.3 15.3 0 1 0 9 25.1A16.5 16.5 0 0 1 25.8 5.2Z" fill="currentColor"/><path d="m12 11 1 3.2 3.2 1-3.2 1-1 3.2-1-3.2-3.2-1 3.2-1 1-3.2Z" fill="currentColor" opacity=".8"/></svg>',
-  '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="m20 3.5 4.2 11.1 11.1 5.4-11.1 4.1L20 36l-4.2-11.9L4.7 20l11.1-5.4L20 3.5Z" fill="currentColor"/><circle cx="20" cy="20" r="3.1" fill="currentColor" opacity=".7"/></svg>',
-  '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 18c-8-12-18-2-9 5-9 7 1 17 9 5 8 12 18 2 9-5 9-7-1-17-9-5Z" fill="currentColor"/><circle cx="20" cy="22" r="3" fill="currentColor" opacity=".7"/></svg>',
-  '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="m20 3 5.4 10.5L37 20l-11.6 6.5L20 37l-5.4-10.5L3 20l11.6-6.5L20 3Z" fill="currentColor"/><path d="m20 10 5 10-5 10-5-10 5-10Z" fill="currentColor" opacity=".58"/></svg>',
-  '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M34.2 6.1C19.1 5 7.3 8.5 6.2 20.6c-.6 6.6 4.2 11.1 10.1 10.2 12.1-1.8 16.8-12.6 17.9-24.7Z" fill="currentColor"/><path d="M10 29c5-7 11.2-11.4 19.2-16" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" opacity=".65"/></svg>',
-  '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="m20 3 3.8 10.7L34.5 9l-4.7 10.7L40 23.5l-11.6 2.4 2.5 11.6-8.9-7.8L14 39l1.6-11.7L4 25.6l9.8-5.7L7.3 10.5 18.4 14 20 3Z" fill="currentColor"/><circle cx="20" cy="21" r="4" fill="currentColor"/></svg>'
-];
-
 const boardElement = document.querySelector("#board");
 const scoreElement = document.querySelector("#score");
 const movesElement = document.querySelector("#moves");
@@ -96,8 +88,26 @@ function playNote(frequency, duration = 0.16, volume = 0.11, delay = 0) {
 }
 
 function playMatch(cascade) {
-  const notes = cascade > 1 ? [660, 784, 988] : [523, 659];
-  notes.forEach((note, index) => playNote(note, 0.22, 0.09, index * 0.055));
+  const notes = cascade > 1 ? [523, 659, 784, 1047] : [523, 659, 784];
+  notes.forEach((note, index) => playNote(note * (cascade > 2 ? 1.12 : 1), 0.2, 0.09, index * 0.045));
+  if (audioContext && !state.muted) {
+    const start = audioContext.currentTime;
+    const buffer = audioContext.createBuffer(1, Math.floor(audioContext.sampleRate * 0.11), audioContext.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i += 1) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length) ** 2;
+    const source = audioContext.createBufferSource();
+    const filter = audioContext.createBiquadFilter();
+    const gain = audioContext.createGain();
+    source.buffer = buffer;
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(1800, start);
+    filter.frequency.exponentialRampToValueAtTime(380, start + 0.1);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(cascade > 1 ? 0.16 : 0.11, start + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.11);
+    source.connect(filter).connect(gain).connect(audioContext.destination);
+    source.start(start);
+  }
 }
 
 function formatScore(score) {
@@ -112,7 +122,7 @@ function cellLabel(tile, row, column) {
   return `${piece}${special}, row ${row + 1}, column ${column + 1}`;
 }
 
-function render({ swapCells = [], invalidCells = [], refillCells = [] } = {}) {
+function render({ swapCells = [], invalidCells = [], refillCells = [], swapOffsets = {} } = {}) {
   const fragment = document.createDocumentFragment();
   for (let row = 0; row < BOARD_SIZE; row += 1) {
     for (let column = 0; column < BOARD_SIZE; column += 1) {
@@ -124,12 +134,16 @@ function render({ swapCells = [], invalidCells = [], refillCells = [] } = {}) {
       button.disabled = state.ended;
       if (state.selected === index) button.classList.add("is-selected");
       if (swapCells.includes(index)) button.classList.add("is-swapping");
+      if (swapOffsets[index]) {
+        button.style.setProperty("--swap-x", `${swapOffsets[index].x}px`);
+        button.style.setProperty("--swap-y", `${swapOffsets[index].y}px`);
+      }
       if (invalidCells.includes(index)) button.classList.add("is-invalid");
       if (refillCells.includes(index)) button.classList.add("is-refilling");
       if (tile.special) button.classList.add(`is-special`, `is-special-${tile.special}`);
       button.dataset.index = String(index);
       button.setAttribute("aria-label", cellLabel(tile, row, column));
-      button.innerHTML = `${pieceIcons[tile.type]}${tile.special ? '<span class="special-mark" aria-hidden="true">Γ£ª</span>' : ""}`;
+      button.innerHTML = `${pieceIcons[tile.type]}${tile.special ? '<span class="special-mark" aria-hidden="true">✦</span>' : ""}${refillCells.includes(index) ? '<span class="match-burst" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>' : ""}`;
       fragment.append(button);
     }
   }
@@ -189,14 +203,21 @@ async function attemptSwap(firstIndex, secondIndex) {
   if (!isAdjacent(first, second)) return;
 
   createAudioContext();
+  const firstEl = boardElement.querySelector(`[data-index="${firstIndex}"]`);
+  const secondEl = boardElement.querySelector(`[data-index="${secondIndex}"]`);
+  const firstRect = firstEl?.getBoundingClientRect();
+  const secondRect = secondEl?.getBoundingClientRect();
+  const dx = firstRect && secondRect ? secondRect.left - firstRect.left : 0;
+  const dy = firstRect && secondRect ? secondRect.top - firstRect.top : 0;
+  const swapOffsets = { [firstIndex]: { x: dx, y: dy }, [secondIndex]: { x: -dx, y: -dy } };
   state.selected = null;
   state.busy = true;
   const specialSwap = Boolean(state.board[first[0]][first[1]].special || state.board[second[0]][second[1]].special);
   const legalSwap = isValidSwap(state.board, first, second);
   swapTiles(state.board, first, second);
-  render({ swapCells: [firstIndex, secondIndex] });
-  playNote(440, 0.12, 0.055);
-  await delay(145);
+  render({ swapCells: [firstIndex, secondIndex], swapOffsets });
+  playNote(440, 0.16, 0.06);
+  await delay(265);
   if (generation !== state.generation) return;
 
   if (!legalSwap) {
@@ -231,12 +252,12 @@ async function attemptSwap(firstIndex, secondIndex) {
     setHint(
       result.created
         ? result.created.special === "wild" ? "A starlight piece appeared" : "A line-clearing piece appeared"
-        : cascade > 1 ? `Lovely cascade ├ù${cascade}` : "A little more stardust",
+        : cascade > 1 ? `Lovely cascade ×${cascade}` : "A little more stardust",
       result.created ? "special" : "default"
     );
     announce(`${result.clearedCount} pieces cleared${cascade > 1 ? `, cascade ${cascade}` : ""}.`);
     preferredCell = null;
-    await delay(230);
+    await delay(320);
     if (generation !== state.generation) return;
   }
 

@@ -176,7 +176,7 @@ function cellLabel(tile, row, column) {
   return `${piece}${special}, row ${row + 1}, column ${column + 1}`;
 }
 
-function render({ swapCells = [], invalidCells = [], refillCells = [], swapOffsets = {} } = {}) {
+function render({ swapCells = [], invalidCells = [], swapOffsets = {}, fallOffsets = {} } = {}) {
   const fragment = document.createDocumentFragment();
   for (let row = 0; row < BOARD_SIZE; row += 1) {
     for (let column = 0; column < BOARD_SIZE; column += 1) {
@@ -192,17 +192,62 @@ function render({ swapCells = [], invalidCells = [], refillCells = [], swapOffse
         button.style.setProperty("--swap-x", `${swapOffsets[index].x}px`);
         button.style.setProperty("--swap-y", `${swapOffsets[index].y}px`);
       }
+      if (fallOffsets[index]) {
+        button.classList.add("is-falling");
+        button.style.setProperty("--fall-x", `${fallOffsets[index].x}px`);
+        button.style.setProperty("--fall-y", `${fallOffsets[index].y}px`);
+      }
       if (invalidCells.includes(index)) button.classList.add("is-invalid");
-      if (refillCells.includes(index)) button.classList.add("is-refilling");
       if (tile.special) button.classList.add(`is-special`, `is-special-${tile.special}`);
       button.dataset.index = String(index);
       button.setAttribute("aria-label", cellLabel(tile, row, column));
-      button.innerHTML = `${pieceIcons[tile.type]}${tile.special ? '<span class="special-mark" aria-hidden="true">✦</span>' : ""}${refillCells.includes(index) ? '<span class="match-burst" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>' : ""}`;
+      button.innerHTML = `${pieceIcons[tile.type]}${tile.special ? '<span class="special-mark" aria-hidden="true">✦</span>' : ""}`;
       fragment.append(button);
     }
   }
   boardElement.replaceChildren(fragment);
   updateDashboard();
+}
+
+function animateClears(clearedCells) {
+  for (const index of clearedCells) {
+    const piece = boardElement.querySelector(`[data-index="${index}"]`);
+    if (!piece) continue;
+    piece.disabled = true;
+    piece.classList.add("is-clearing");
+    piece.insertAdjacentHTML("beforeend", '<span class="match-burst" aria-hidden="true"><b></b><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>');
+  }
+}
+
+function getFallOffsets(previousPositions) {
+  const first = boardElement.querySelector('[data-index="0"]')?.getBoundingClientRect();
+  const nextRow = boardElement.querySelector(`[data-index="${BOARD_SIZE}"]`)?.getBoundingClientRect();
+  if (!first || !nextRow) return {};
+  const rowStep = nextRow.top - first.top;
+  const offsets = {};
+  for (let row = 0; row < BOARD_SIZE; row += 1) {
+    for (let column = 0; column < BOARD_SIZE; column += 1) {
+      const index = row * BOARD_SIZE + column;
+      const tile = state.board[row][column];
+      const origin = previousPositions.get(tile);
+      let dx;
+      let dy;
+      if (origin !== undefined) {
+        const originPiece = boardElement.querySelector(`[data-index="${origin}"]`);
+        const targetPiece = boardElement.querySelector(`[data-index="${index}"]`);
+        if (!originPiece || !targetPiece) continue;
+        const from = originPiece.getBoundingClientRect();
+        const to = targetPiece.getBoundingClientRect();
+        dx = from.left - to.left;
+        dy = from.top - to.top;
+      } else {
+        dx = 0;
+        dy = -(row + 1) * rowStep;
+      }
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) offsets[index] = { x: dx, y: dy };
+    }
+  }
+  return offsets;
 }
 
 function updateDashboard() {
@@ -321,8 +366,11 @@ async function attemptSwap(firstIndex, secondIndex) {
   let preferredCell = second;
 
   while (cascade < BOARD_SIZE * BOARD_SIZE) {
+    const previousPositions = new Map();
+    state.board.forEach((line, row) => line.forEach((tile, column) => previousPositions.set(tile, row * BOARD_SIZE + column)));
     const result = resolveMatches(state.board, Math.random, preferredCell, cascade === 0 && specialSwap ? [first, second] : []);
     if (!result) break;
+    const fallOffsets = getFallOffsets(previousPositions);
     cascade += 1;
     state.score += result.clearedCount * 10 * cascade;
     if (result.created) state.score += result.created.special === "wild" ? 50 : 30;
@@ -330,7 +378,7 @@ async function attemptSwap(firstIndex, secondIndex) {
       state.best = state.score;
       savePreference("astra-grove-best", String(state.best));
     }
-    render({ refillCells: result.clearedCells });
+    animateClears(result.clearedCells);
     playMatch(cascade);
     setHint(
       result.created
@@ -340,7 +388,10 @@ async function attemptSwap(firstIndex, secondIndex) {
     );
     announce(`${result.clearedCount} pieces cleared${cascade > 1 ? `, cascade ${cascade}` : ""}.`);
     preferredCell = null;
-    await delay(320);
+    await delay(190);
+    if (generation !== state.generation) return;
+    render({ fallOffsets });
+    await delay(430);
     if (generation !== state.generation) return;
   }
 

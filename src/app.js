@@ -17,7 +17,9 @@ import { pieceIcons } from "./pieces.js";
 const pieceNames = ["Moonbud", "Comet", "Bloom", "Prism", "Leaflight", "Sunseed"];
 const boardElement = document.querySelector("#board");
 const scoreElement = document.querySelector("#score");
-const movesElement = document.querySelector("#moves");
+const movesElement = document.querySelector("#rail-moves");
+const railGoalElement = document.querySelector("#rail-goal");
+const railCratesElement = document.querySelector("#rail-crates");
 const goalLabel = document.querySelector("#goal-label");
 const progress = document.querySelector("#goal-progress");
 const progressFill = document.querySelector("#progress-fill");
@@ -32,7 +34,6 @@ const boardLevelElement = document.querySelector("#board-level");
 const heartsElement = document.querySelector("#hearts");
 const heartClockElement = document.querySelector("#heart-clock");
 const coinsElement = document.querySelector("#coins");
-const obstacleLabel = document.querySelector("#obstacle-label");
 const introOverlay = document.querySelector("#level-intro");
 const introKind = document.querySelector("#level-kind");
 const introNumber = document.querySelector("#level-intro-number");
@@ -153,6 +154,14 @@ function playMatch(cascade) {
   }
 }
 
+function playPowerNote(special) {
+  if (special === "row") { playNote(392, .3, .13); playNote(784, .32, .1, .04); }
+  else if (special === "column") { playNote(330, .3, .12); playNote(880, .38, .1, .06); }
+  else if (special === "bomb") { playNote(130, .36, .17); playNote(523, .3, .1, .05); }
+  else if (special === "fish") { [659, 784, 988].forEach((frequency, index) => playNote(frequency, .14, .075, index * .055)); }
+  else { [523, 659, 880, 1175].forEach((frequency, index) => playNote(frequency, .16, .08, index * .045)); }
+}
+
 function formatScore(score) {
   return String(score).padStart(4, "0");
 }
@@ -174,7 +183,7 @@ function render({ swapCells = [], invalidCells = [], swapOffsets = {}, fallOffse
       const tile = state.board[row][column];
       const button = document.createElement("button");
       button.type = "button";
-      button.className = tile.obstacle ? "piece obstacle" : `piece piece--${tile.type}`;
+      button.className = tile.obstacle ? `piece obstacle obstacle--${tile.kind ?? "crate"}` : `piece piece--${tile.type}`;
       if (tile.obstacle && tile.hits > 1) button.classList.add("obstacle--cracked");
       button.disabled = state.ended || tile.obstacle;
       if (state.selected === index) button.classList.add("is-selected");
@@ -192,7 +201,7 @@ function render({ swapCells = [], invalidCells = [], swapOffsets = {}, fallOffse
       if (tile.special) button.classList.add(`is-special`, `is-special-${tile.special}`);
       button.dataset.index = String(index);
       button.setAttribute("aria-label", cellLabel(tile, row, column));
-      button.innerHTML = tile.obstacle ? '<span class="obstacle-art" aria-hidden="true"><i></i><i></i><i></i></span>' : `${pieceIcons[tile.type]}${tile.special ? `<span class="special-mark" aria-hidden="true">${tile.special === "bomb" ? "✹" : tile.special === "fish" ? "≈" : tile.special === "row" ? "↔" : tile.special === "column" ? "↕" : "✦"}</span>` : ""}`;
+      button.innerHTML = tile.obstacle ? tile.kind === "ice" ? '<span class="ice-art" aria-hidden="true"><i></i></span>' : tile.kind === "rope" ? '<span class="rope-art" aria-hidden="true"><i></i><i></i></span>' : '<span class="obstacle-art" aria-hidden="true"><i></i><i></i><i></i></span>' : `${pieceIcons[tile.type]}${tile.special ? `<span class="special-mark" aria-hidden="true">${tile.special === "bomb" ? "✹" : tile.special === "fish" ? "≈" : tile.special === "row" ? "↔" : tile.special === "column" ? "↕" : "✦"}</span>` : ""}`;
       fragment.append(button);
     }
   }
@@ -226,6 +235,12 @@ function animateObstacleHits(cells) {
 function animatePowerEffects(activations = []) {
   let longest = 0;
   const boardRect = boardElement.getBoundingClientRect();
+  if (activations.length) {
+    boardElement.classList.remove("is-board-shaking");
+    void boardElement.offsetWidth;
+    boardElement.classList.add("is-board-shaking");
+    window.setTimeout(() => boardElement.classList.remove("is-board-shaking"), 420);
+  }
   for (const effect of activations) {
     const sourceIndex = effect.cell[0] * BOARD_SIZE + effect.cell[1];
     const source = boardElement.querySelector(`[data-index="${sourceIndex}"]`);
@@ -240,6 +255,7 @@ function animatePowerEffects(activations = []) {
       effectNode.style.setProperty("--effect-y", `${y}px`);
       boardElement.append(effectNode);
       window.setTimeout(() => effectNode.remove(), 430);
+      playPowerNote(effect.special);
       longest = Math.max(longest, 390);
     } else if (effect.special === "fish" && effect.target) {
       const targetIndex = effect.target[0] * BOARD_SIZE + effect.target[1];
@@ -254,6 +270,7 @@ function animatePowerEffects(activations = []) {
       effectNode.style.setProperty("--fish-y", `${targetRect.top - sourceRect.top}px`);
       boardElement.append(effectNode);
       window.setTimeout(() => effectNode.remove(), 560);
+      playPowerNote(effect.special);
       longest = Math.max(longest, 500);
     } else {
       effectNode.className = "power-burst";
@@ -261,6 +278,7 @@ function animatePowerEffects(activations = []) {
       effectNode.style.top = `${y}px`;
       boardElement.append(effectNode);
       window.setTimeout(() => effectNode.remove(), 380);
+      playPowerNote(effect.special);
       longest = Math.max(longest, 340);
     }
   }
@@ -315,7 +333,9 @@ function updateDashboard() {
   levelElement.textContent = String(state.level);
   boardLevelElement.textContent = String(state.level);
   document.querySelector("#difficulty-label").textContent = config.difficulty.toUpperCase();
-  obstacleLabel.textContent = `${countObstacles(state.board)} crates`;
+  const obstaclesLeft = countObstacles(state.board);
+  railGoalElement.textContent = String(goal);
+  railCratesElement.textContent = String(obstaclesLeft);
   heartsElement.textContent = `${state.hearts}/${HEART_CAP}`;
   coinsElement.textContent = String(state.coins);
   buyHeartsButton.disabled = state.hearts >= HEART_CAP || state.coins < 250;
@@ -439,7 +459,7 @@ async function attemptSwap(firstIndex, secondIndex) {
     }
     animateClears(result.clearedCells);
     animateObstacleHits(result.damagedCells ?? []);
-    const effectDuration = Math.max(animatePowerEffects(result.activatedSpecials), result.damagedCells?.length ? 300 : 0);
+    const effectDuration = Math.max(animatePowerEffects(result.activatedSpecials), result.damagedCells?.length ? 360 : 300);
     playMatch(cascade);
     setHint(
       result.created

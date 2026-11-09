@@ -183,7 +183,13 @@ export function createLevelBoard(levelOrConfig, random = Math.random, size = BOA
       return rank(a) - rank(b);
     });
     ordered.slice(0, config.obstacleCount).forEach(([row, column]) => {
-      board[row][column] = { type: null, special: null, obstacle: true, hits: config.difficulty === "Super Hard" && config.level >= 1200 && (row + column + config.level) % 3 === 0 ? 2 : 1 };
+      board[row][column] = {
+        type: null,
+        special: null,
+        obstacle: true,
+        kind: config.level >= 351 && (row + column) % 3 === 0 ? "ice" : config.level >= 101 && (row + column) % 3 === 1 ? "rope" : "crate",
+        hits: config.difficulty === "Super Hard" && config.level >= 1200 && (row + column + config.level) % 3 === 0 ? 2 : 1
+      };
     });
     if (hasPossibleMoves(board)) return board;
   }

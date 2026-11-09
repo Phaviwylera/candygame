@@ -27,6 +27,7 @@ const overlay = document.querySelector("#game-over");
 const soundButton = document.querySelector("#sound-toggle");
 const installButton = document.querySelector("#install-button");
 const levelElement = document.querySelector("#level");
+const boardLevelElement = document.querySelector("#board-level");
 const heartsElement = document.querySelector("#hearts");
 const heartClockElement = document.querySelector("#heart-clock");
 const coinsElement = document.querySelector("#coins");
@@ -208,6 +209,7 @@ function updateDashboard() {
   updateHearts();
   const goal = goalForLevel();
   levelElement.textContent = String(state.level);
+  boardLevelElement.textContent = String(state.level);
   heartsElement.textContent = `${state.hearts}/${HEART_CAP}`;
   coinsElement.textContent = String(state.coins);
   buyHeartsButton.disabled = state.hearts >= HEART_CAP || state.coins < 250;

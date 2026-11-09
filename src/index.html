@@ -62,22 +62,10 @@
             <button class="resource-pill coin-pill" id="buy-hearts" type="button" aria-label="Refill hearts for 250 coins"><span aria-hidden="true">🪙</span><strong id="coins">250</strong><small>+</small></button>
             <div class="resource-pill timer-pill"><span aria-hidden="true">⏱️</span><strong id="timer">01:30</strong><small>TIME</small></div>
           </div>
-          <div class="score-block">
-            <span class="stat-label">STARS</span>
-            <span class="score-value" id="score" aria-live="polite">0000</span>
-          </div>
-          <div class="goal-block" aria-label="Score progress">
-            <div class="goal-caption"><span>LEVEL GOAL</span><span id="goal-label">0 / 900</span></div>
-            <div class="progress-track" role="progressbar" id="goal-progress" aria-label="Grove goal progress" aria-valuemin="0" aria-valuemax="900" aria-valuenow="0"><span id="progress-fill"></span></div>
-          </div>
-          <div class="moves-block">
-            <span class="stat-label">MOVES</span>
-            <span class="moves-value" id="moves">24</span>
-          </div>
         </div>
 
         <div class="board-heading">
-          <span class="board-heading-label"><span class="live-dot"></span> MATCH TO GROW</span>
+          <span class="board-heading-label"><span class="live-dot"></span> LEVEL <strong id="board-level">1</strong></span>
           <span class="hint-label" id="hint">Find a little magic <span aria-hidden="true">✦</span></span>
         </div>
         <div class="board-wrap">
@@ -89,6 +77,14 @@
             <p class="result-copy" id="result-copy">You gathered enough starlight.</p>
             <button class="play-again" id="play-again" type="button">Continue <span aria-hidden="true">↗</span></button>
           </div>
+        </div>
+        <div class="bottom-stats">
+          <div class="bottom-stat moves-block"><span class="bottom-stat-label">MOVES</span><span class="moves-value" id="moves">24</span></div>
+          <div class="bottom-goal goal-block" aria-label="Score progress">
+            <div class="goal-caption"><span>LEVEL GOAL</span><span id="goal-label">0 / 900</span></div>
+            <div class="progress-track" role="progressbar" id="goal-progress" aria-label="Grove goal progress" aria-valuemin="0" aria-valuemax="900" aria-valuenow="0"><span id="progress-fill"></span></div>
+          </div>
+          <div class="bottom-stat score-block"><span class="bottom-stat-label">SCORE</span><span class="score-value" id="score" aria-live="polite">0000</span></div>
         </div>
         <div class="panel-footer">
           <span><span class="footer-spark" aria-hidden="true">🌱</span> Match 3 or more to earn coins</span>

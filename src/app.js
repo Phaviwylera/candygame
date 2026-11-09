@@ -70,7 +70,10 @@ let roundInterval = null;
 
 function goalForLevel() { return SCORE_GOAL + (state.level - 1) * 110; }
 function durationForLevel() { return Math.max(55, ROUND_SECONDS - Math.floor((state.level - 1) / 4) * 3); }
-function saveProgress() { savePreference("astra-grove-town-progress", JSON.stringify({ level: state.level, coins: state.coins, hearts: state.hearts, heartAt: state.heartAt })); }
+function saveProgress() {
+  const savedLevel = state.ended && state.score >= goalForLevel() ? state.level + 1 : state.level;
+  savePreference("astra-grove-town-progress", JSON.stringify({ level: savedLevel, coins: state.coins, hearts: state.hearts, heartAt: state.heartAt }));
+}
 
 function updateHearts() {
   if (state.hearts >= HEART_CAP) { state.heartAt = Date.now(); return; }

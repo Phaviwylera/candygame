@@ -766,6 +766,109 @@ h1 span {
   }
 }
 
+/* Sunny Grove town-game skin */
+:root {
+  color-scheme: light;
+  --night: #b9ebfc;
+  --panel: #fff3cf;
+  --board: #7cae57;
+  --ink: #4c4437;
+  --muted: #80745f;
+  --quiet: #9f9279;
+  --mint: #62bb4e;
+  --gold: #f3b53e;
+  --line: rgb(110 86 42 / 18%);
+}
+
+body {
+  color: #514638;
+  background:
+    radial-gradient(ellipse at 14% 13%, rgb(255 255 255 / 80%) 0 4%, transparent 4.5%),
+    radial-gradient(ellipse at 19% 15%, rgb(255 255 255 / 74%) 0 5%, transparent 5.5%),
+    radial-gradient(ellipse at 78% 21%, rgb(255 255 255 / 72%) 0 4%, transparent 4.5%),
+    linear-gradient(180deg, #89d8f5 0%, #c6eff8 49%, #c5e89a 50%, #87c96f 100%);
+}
+.sky .star, .sky .orbit { display:none; }
+.glow { opacity:.19; filter:blur(70px); }
+.glow--left { background:#87dc72; }
+.glow--right { background:#fff3a8; }
+.game-shell { width:min(100% - 28px, 486px); padding:12px 0 18px; }
+.topbar { min-height:42px; padding:0 8px; }
+.brand { gap:7px; }
+.brand-mark { color:#55ae4d; filter:drop-shadow(0 2px 0 #f1b644); }
+.brand-name { color:#4a6b42; letter-spacing:.1em; }
+.brand-name span { color:#638f52; }
+.topbar-actions { gap:9px; }
+.best-score { color:#537447; }
+.best-score strong { color:#405d38; }
+.icon-button { width:35px; height:35px; border:2px solid #fff8df; background:#fff2cf; color:#557546; box-shadow:0 3px 0 #d2ad61; }
+.icon-button:hover { border-color:white; background:#fff9e9; }
+.intro { margin:10px 0 12px; }
+.town-banner { display:flex; align-items:center; justify-content:center; gap:9px; }
+.town-badge { display:flex; flex-direction:column; align-items:center; padding:5px 10px 4px; border:2px solid #fff7db; border-radius:13px; background:linear-gradient(#81ce61,#58ab48); color:white; font-size:8px; font-weight:900; letter-spacing:.12em; line-height:1.1; text-shadow:0 1px #38803a; box-shadow:0 3px 0 #44883e; }
+.town-badge strong { font-family:var(--display); font-size:19px; letter-spacing:0; }
+.town-medal { font-size:26px; filter:drop-shadow(0 2px 0 #c8903b); }
+h1 { margin:0; color:#4f7b43; font-size:clamp(31px,8vw,43px); text-shadow:0 2px #f9f6d8; }
+h1 span { color:#e8903e; }
+.intro p { margin-top:4px; color:#527c48; font-size:12px; font-weight:700; }
+.game-panel { padding:12px 12px 10px; border:3px solid #fff9e3; border-radius:23px; background:linear-gradient(155deg,#fff8df,#f8e8b9); box-shadow:0 7px 0 #c6a65c,0 15px 35px rgb(53 102 57 / 20%),inset 0 2px white; }
+.dashboard { display:grid; grid-template-columns:minmax(68px,.8fr) minmax(0,1.6fr) minmax(45px,.65fr); align-items:end; gap:8px; padding:0 0 10px; }
+.resource-row { grid-column:1/-1; }
+.resource-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; }
+.resource-pill { display:flex; align-items:center; justify-content:center; gap:5px; min-width:0; min-height:39px; padding:4px 7px; border:2px solid #fff; border-radius:14px; color:#fff; box-shadow:0 3px 0 rgb(71 79 49 / 22%),inset 0 1px rgb(255 255 255 / 40%); text-shadow:0 1px rgb(67 68 45 / 25%); font-family:var(--body); }
+.resource-pill strong { font-size:13px; font-weight:900; font-variant-numeric:tabular-nums; }
+.resource-pill small { color:rgb(255 255 255 / 88%); font-size:8px; font-weight:900; letter-spacing:.06em; }
+.heart-pill { background:linear-gradient(#ff9b8f,#ef655e); }
+.coin-pill { background:linear-gradient(#ffd567,#ed9e35); cursor:pointer; }
+.coin-pill:disabled { filter:saturate(.65); opacity:.7; }
+.timer-pill { background:linear-gradient(#75c9ef,#42a3d7); }
+.timer-pill.timer-low { animation:timer-alert .7s infinite alternate; }
+.resource-pill span { font-size:15px; }
+.score-block,.moves-block { flex-direction:row; align-items:center; gap:7px; }
+.moves-block { justify-content:flex-end; }
+.score-block { justify-content:flex-start; }
+.goal-block { grid-column:2; grid-row:2; }
+.moves-block { grid-column:3; grid-row:2; }
+.stat-label,.goal-caption { color:#83704d; font-size:9px; letter-spacing:.08em; }
+.score-value,.moves-value { color:#53452e; font-size:21px; }
+.score-value { color:#cc8431; }
+.moves-value--low,.timer-low { color:#b73f32; }
+.goal-block { flex:1; min-width:0; padding:0; }
+.goal-caption { margin-bottom:4px; }
+.goal-caption span:last-child { color:#856938; }
+.progress-track { height:10px; border:2px solid white; background:#dacfae; box-shadow:inset 0 1px 2px rgb(72 62 40 / 16%); }
+.progress-track span { background:linear-gradient(90deg,#6fc64b,#abd938); box-shadow:0 0 8px rgb(117 190 54 / 44%); }
+.board-heading { min-height:28px; padding:0 4px 7px; }
+.board-heading-label { color:#628348; font-size:9px; letter-spacing:.1em; }
+.live-dot { background:#78c84c; box-shadow:0 0 7px #a0df61; }
+.hint-label { color:#907344; font-size:10px; }
+.board { gap:clamp(3px,.8vw,5px); padding:8px; border:3px solid #fff2cd; border-radius:17px; background:linear-gradient(145deg,#92c96c,#74a94f); box-shadow:inset 0 3px 8px rgb(48 91 41 / 24%),0 2px 0 #8fbd58; }
+.piece { border-color:color-mix(in srgb,var(--gem-light) 48%,white); border-radius:clamp(7px,1.5vw,11px); box-shadow:inset 0 2px 2px rgb(255 255 255 / 54%),inset 0 -4px 7px rgb(0 0 0 / 20%),0 3px 2px rgb(63 90 48 / 28%); }
+.piece.is-selected { border-color:#fff; box-shadow:0 0 0 3px #ffe36b,0 0 14px #fff2a6; }
+.panel-footer { min-height:31px; color:#887953; font-size:9px; }
+.footer-spark { color:#65a84d; }
+.reset-button { color:#71884e; }
+.reset-button:hover { color:#4d873e; }
+.footnote { color:#517747; }
+.site-footer { color:#53774c; }
+.site-footer a:hover { color:#286e3f; }
+.game-over { border:3px solid #fff; border-radius:19px; background:rgb(255 249 225 / 96%); color:#4d483c; box-shadow:0 7px 0 rgb(181 145 73 / 60%); }
+.game-over h2 { color:#548248; }
+.result-kicker { color:#c48236; }
+.result-copy { color:#817458; }
+.play-again { border:2px solid #fff; background:linear-gradient(#7ecd58,#51a943); box-shadow:0 4px 0 #38803a; }
+.play-again:hover { background:#69bc4d; }
+.sr-only { color:inherit; }
+@keyframes timer-alert { to { transform:scale(1.04); filter:saturate(1.35); } }
+
+@media (max-width:380px) {
+  .game-shell { width:min(100% - 20px,486px); }
+  .game-panel { padding:9px 9px 8px; }
+  .resource-row { gap:4px; }
+  .resource-pill { gap:3px; padding-inline:4px; }
+  .resource-pill strong { font-size:12px; }
+}
+
 @media (max-width: 365px) {
   .game-shell {
     width: calc(100% - 20px);

@@ -1,4 +1,4 @@
-const CACHE = "astra-grove-v2";
+const CACHE = "astra-grove-v3";
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);

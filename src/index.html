@@ -1,16 +1,12 @@
 <!doctype html>
 <html lang="en">
   <!--
-    THESIS: Make the playable match-three board the whole experience, not a menu-led level map.
-    OWN-WORLD: A midnight conservatory of ink-blue sky, orbital markings, mint starlight, and lacquered jewel pieces.
-    STORY: Find a legal swap, grow cascades and line-clearing blooms, and gather 900 stardust in 24 turns.
-    FIRST VIEWPORT: A centered title sits above one 8-by-8 board; score, goal progress, and moves sit directly above it.
-    FORM: The product-native, experience-first puzzle board is the staging; its playable 8-by-8 grid leads the surface.
+    THESIS: A friendly, town-builder inspired puzzle HUD wraps the fast match-three board.
   -->
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#111421">
+    <meta name="theme-color" content="#8bd9f6">
     <meta name="description" content="Gather starlight in Astra Grove, a little match-three puzzle beneath the night sky.">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -55,18 +51,23 @@
       </header>
 
       <section class="intro" aria-labelledby="game-title">
-        <h1 id="game-title">Astra <span>Grove</span></h1>
-        <p>Match the magic. Gather the starlight.</p>
+        <div class="town-banner"><span class="town-badge">LEVEL <strong id="level">1</strong></span><h1 id="game-title">Sunny <span>Grove</span></h1><span class="town-medal" aria-hidden="true">🌼</span></div>
+        <p>Grow your little corner of joy</p>
       </section>
 
       <section class="game-panel" aria-label="Astra Grove game">
         <div class="dashboard">
+          <div class="resource-row">
+            <div class="resource-pill heart-pill"><span aria-hidden="true">❤️</span><strong id="hearts">5/5</strong><small id="heart-clock">FULL</small></div>
+            <button class="resource-pill coin-pill" id="buy-hearts" type="button" aria-label="Refill hearts for 250 coins"><span aria-hidden="true">🪙</span><strong id="coins">250</strong><small>+</small></button>
+            <div class="resource-pill timer-pill"><span aria-hidden="true">⏱️</span><strong id="timer">01:30</strong><small>TIME</small></div>
+          </div>
           <div class="score-block">
-            <span class="stat-label">STARDUST</span>
+            <span class="stat-label">STARS</span>
             <span class="score-value" id="score" aria-live="polite">0000</span>
           </div>
           <div class="goal-block" aria-label="Score progress">
-            <div class="goal-caption"><span>GROVE GOAL</span><span id="goal-label">0 / 900</span></div>
+            <div class="goal-caption"><span>LEVEL GOAL</span><span id="goal-label">0 / 900</span></div>
             <div class="progress-track" role="progressbar" id="goal-progress" aria-label="Grove goal progress" aria-valuemin="0" aria-valuemax="900" aria-valuenow="0"><span id="progress-fill"></span></div>
           </div>
           <div class="moves-block">
@@ -76,7 +77,7 @@
         </div>
 
         <div class="board-heading">
-          <span class="board-heading-label"><span class="live-dot"></span> THE CANOPY</span>
+          <span class="board-heading-label"><span class="live-dot"></span> MATCH TO GROW</span>
           <span class="hint-label" id="hint">Find a little magic <span aria-hidden="true">✦</span></span>
         </div>
         <div class="board-wrap">
@@ -86,12 +87,12 @@
             <p class="result-kicker" id="result-kicker">THE GROVE IS GLOWING</p>
             <h2 id="result-title">Beautifully done.</h2>
             <p class="result-copy" id="result-copy">You gathered enough starlight.</p>
-            <button class="play-again" id="play-again" type="button">Play again <span aria-hidden="true">↗</span></button>
+            <button class="play-again" id="play-again" type="button">Continue <span aria-hidden="true">↗</span></button>
           </div>
         </div>
         <div class="panel-footer">
-          <span><span class="footer-spark" aria-hidden="true">✧</span> Match 3 or more to gather stardust</span>
-          <button class="reset-button" id="reset-button" type="button"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 8A6.5 6.5 0 1 0 17 11m-.5-7v4h-4"/></svg> New game</button>
+          <span><span class="footer-spark" aria-hidden="true">🌱</span> Match 3 or more to earn coins</span>
+          <button class="reset-button" id="reset-button" type="button"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 8A6.5 6.5 0 1 0 17 11m-.5-7v4h-4"/></svg> Restart level</button>
         </div>
       </section>
 

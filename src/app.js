@@ -26,11 +26,33 @@ const announcer = document.querySelector("#announcer");
 const overlay = document.querySelector("#game-over");
 const soundButton = document.querySelector("#sound-toggle");
 const installButton = document.querySelector("#install-button");
+const levelElement = document.querySelector("#level");
+const heartsElement = document.querySelector("#hearts");
+const heartClockElement = document.querySelector("#heart-clock");
+const coinsElement = document.querySelector("#coins");
+const timerElement = document.querySelector("#timer");
+const buyHeartsButton = document.querySelector("#buy-hearts");
+const HEART_CAP = 5;
+const HEART_REGEN_MS = 30 * 60 * 1000;
+const ROUND_SECONDS = 90;
+
+function loadProgress() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("astra-grove-town-progress") || "{}");
+    return { level: Math.max(1, Number(saved.level) || 1), coins: saved.coins == null ? 250 : Math.max(0, Number(saved.coins) || 0), hearts: Math.max(0, Math.min(HEART_CAP, Number(saved.hearts ?? HEART_CAP))), heartAt: Number(saved.heartAt) || Date.now() };
+  } catch { return { level: 1, coins: 250, hearts: HEART_CAP, heartAt: Date.now() }; }
+}
+const progressSave = loadProgress();
 
 const state = {
   board: createBoard(),
   score: 0,
   moves: MOVE_LIMIT,
+  level: progressSave.level,
+  coins: progressSave.coins,
+  hearts: progressSave.hearts,
+  heartAt: progressSave.heartAt,
+  seconds: ROUND_SECONDS,
   selected: null,
   busy: false,
   ended: false,
@@ -44,6 +66,34 @@ let pointerStart = null;
 let suppressClicksUntil = 0;
 let completedGames = 0;
 let installPrompt = null;
+let roundInterval = null;
+
+function goalForLevel() { return SCORE_GOAL + (state.level - 1) * 110; }
+function durationForLevel() { return Math.max(55, ROUND_SECONDS - Math.floor((state.level - 1) / 4) * 3); }
+function saveProgress() { savePreference("astra-grove-town-progress", JSON.stringify({ level: state.level, coins: state.coins, hearts: state.hearts, heartAt: state.heartAt })); }
+
+function updateHearts() {
+  if (state.hearts >= HEART_CAP) { state.heartAt = Date.now(); return; }
+  const recovered = Math.floor(Math.max(0, Date.now() - state.heartAt) / HEART_REGEN_MS);
+  if (recovered) {
+    state.hearts = Math.min(HEART_CAP, state.hearts + recovered);
+    state.heartAt += recovered * HEART_REGEN_MS;
+    if (state.hearts >= HEART_CAP) state.heartAt = Date.now();
+    saveProgress();
+  }
+}
+
+function startRoundClock() {
+  window.clearInterval(roundInterval);
+  state.seconds = durationForLevel();
+  updateDashboard();
+  roundInterval = window.setInterval(() => {
+    if (state.ended || state.busy) return;
+    state.seconds -= 1;
+    updateDashboard();
+    if (state.seconds <= 0) endGame(false, "time");
+  }, 1000);
+}
 
 function readPreference(key) {
   try {
@@ -152,12 +202,26 @@ function render({ swapCells = [], invalidCells = [], refillCells = [], swapOffse
 }
 
 function updateDashboard() {
+  updateHearts();
+  const goal = goalForLevel();
+  levelElement.textContent = String(state.level);
+  heartsElement.textContent = `${state.hearts}/${HEART_CAP}`;
+  coinsElement.textContent = String(state.coins);
+  buyHeartsButton.disabled = state.hearts >= HEART_CAP || state.coins < 250;
+  const continueButton = document.querySelector("#play-again");
+  continueButton.disabled = state.ended && state.hearts <= 0 && state.coins < 250;
+  if (state.ended && state.score < goalForLevel() && state.hearts > 0) continueButton.innerHTML = 'Try again <span aria-hidden="true">↗</span>';
+  const nextHeart = Math.max(0, HEART_REGEN_MS - (Date.now() - state.heartAt));
+  heartClockElement.textContent = state.hearts >= HEART_CAP ? "FULL" : `${Math.floor(nextHeart / 60000)}:${String(Math.floor(nextHeart / 1000) % 60).padStart(2, "0")}`;
+  timerElement.textContent = `${String(Math.floor(state.seconds / 60)).padStart(2, "0")}:${String(state.seconds % 60).padStart(2, "0")}`;
+  timerElement.classList.toggle("timer-low", state.seconds <= 15);
   scoreElement.textContent = formatScore(state.score);
   movesElement.textContent = String(state.moves);
   movesElement.classList.toggle("moves-value--low", state.moves <= 5);
-  goalLabel.textContent = `${Math.min(state.score, SCORE_GOAL)} / ${SCORE_GOAL}`;
-  progress.setAttribute("aria-valuenow", String(Math.min(state.score, SCORE_GOAL)));
-  progressFill.style.transform = `scaleX(${Math.min(1, state.score / SCORE_GOAL)})`;
+  goalLabel.textContent = `${Math.min(state.score, goal)} / ${goal}`;
+  progress.setAttribute("aria-valuemax", String(goal));
+  progress.setAttribute("aria-valuenow", String(Math.min(state.score, goal)));
+  progressFill.style.transform = `scaleX(${Math.min(1, state.score / goal)})`;
   bestElement.textContent = formatScore(state.best);
   soundButton.setAttribute("aria-label", state.muted ? "Turn sound on" : "Turn sound off");
   soundButton.classList.toggle("is-muted", state.muted);
@@ -169,21 +233,35 @@ function announce(message) {
 }
 
 function setHint(message, tone = "default") {
-  hintElement.innerHTML = `${message}<span aria-hidden="true">${tone === "special" ? " Γ£º" : " Γ£ª"}</span>`;
+  hintElement.innerHTML = `${message}<span aria-hidden="true">${tone === "special" ? " \u2727" : " \u2726"}</span>`;
   hintElement.classList.toggle("hint-label--special", tone === "special");
 }
 
-function endGame(won) {
+function endGame(won, reason = "moves") {
   state.ended = true;
+  window.clearInterval(roundInterval);
+  if (won) {
+    const reward = 60 + Math.min(state.level * 3, 90);
+    state.coins += reward;
+    document.querySelector("#result-kicker").textContent = `LEVEL ${state.level} COMPLETE · +${reward} COINS`;
+    document.querySelector("#result-title").textContent = "Your grove is growing!";
+    document.querySelector("#result-copy").textContent = `Lovely work! Level ${state.level + 1} is ready when you are.`;
+    document.querySelector("#play-again").innerHTML = `Level ${state.level + 1} <span aria-hidden="true">↗</span>`;
+  } else {
+    state.hearts = Math.max(0, state.hearts - 1);
+    if (state.hearts === HEART_CAP - 1) state.heartAt = Date.now();
+    document.querySelector("#result-kicker").textContent = reason === "time" ? "TIME'S UP" : "LEVEL NOT QUITE";
+    document.querySelector("#result-title").textContent = state.hearts ? "Ready for another try?" : "Your hearts need a rest";
+    document.querySelector("#result-copy").textContent = state.hearts
+      ? `You have ${state.hearts} ${state.hearts === 1 ? "heart" : "hearts"} left. Your best grows with every try.`
+      : "A heart grows back every 30 minutes, or refill now with coins.";
+    document.querySelector("#play-again").innerHTML = state.hearts ? 'Try again <span aria-hidden="true">↗</span>' : 'Refill hearts <span aria-hidden="true">♡</span>';
+  }
+  saveProgress();
   state.selected = null;
   render();
   overlay.hidden = false;
-  document.querySelector("#result-kicker").textContent = won ? "THE GROVE IS GLOWING" : "THE STARS CAN WAIT";
-  document.querySelector("#result-title").textContent = won ? "Beautifully done." : "One more try?";
-  document.querySelector("#result-copy").textContent = won
-    ? `You gathered ${formatScore(state.score)} stardust. What a lovely little constellation.`
-    : `You gathered ${formatScore(state.score)} of ${SCORE_GOAL} stardust. Every grove grows with practice.`;
-  announce(won ? "You win. The grove goal is complete." : "Game over. No moves remain.");
+  announce(won ? `Level ${state.level} complete. Coins earned.` : reason === "time" ? "Time is up. A heart was used." : "Level ended. A heart was used.");
   playNote(won ? 784 : 330, 0.4, 0.12);
   if (won) playNote(988, 0.5, 0.1, 0.14);
   completedGames += 1;
@@ -264,7 +342,7 @@ async function attemptSwap(firstIndex, secondIndex) {
   state.busy = false;
   render();
 
-  if (state.score >= SCORE_GOAL) {
+  if (state.score >= goalForLevel()) {
     endGame(true);
   } else if (state.moves <= 0) {
     endGame(false);
@@ -350,10 +428,53 @@ boardElement.addEventListener("keydown", (event) => {
   }
 });
 
-document.querySelector("#reset-button").addEventListener("click", restart);
-document.querySelector("#play-again").addEventListener("click", restart);
+document.querySelector("#reset-button").addEventListener("click", () => {
+  if (state.ended || state.busy) return;
+  const used = state.moves < MOVE_LIMIT || state.score > 0 || state.seconds < durationForLevel();
+  if (used) {
+    state.hearts = Math.max(0, state.hearts - 1);
+    if (state.hearts === HEART_CAP - 1) state.heartAt = Date.now();
+    saveProgress();
+    if (state.hearts <= 0) { restart(); return; }
+  }
+  restart();
+});
+document.querySelector("#play-again").addEventListener("click", continueFromOverlay);
+buyHeartsButton.addEventListener("click", () => {
+  updateHearts();
+  if (state.hearts >= HEART_CAP || state.coins < 250) return;
+  state.coins -= 250;
+  state.hearts = HEART_CAP;
+  state.heartAt = Date.now();
+  saveProgress();
+  updateDashboard();
+  if (state.ended) { overlay.hidden = true; restart(); }
+});
+
+function continueFromOverlay() {
+  if (state.hearts <= 0) {
+    if (state.coins < 250) return;
+    state.coins -= 250;
+    state.hearts = HEART_CAP;
+    state.heartAt = Date.now();
+    saveProgress();
+  }
+  if (state.score >= goalForLevel()) state.level += 1;
+  overlay.hidden = true;
+  restart();
+}
 
 function restart() {
+  if (state.hearts <= 0) {
+    state.ended = true;
+    overlay.hidden = false;
+    document.querySelector("#result-kicker").textContent = "GROVE REST STOP";
+    document.querySelector("#result-title").textContent = "Your hearts need a rest";
+    document.querySelector("#result-copy").textContent = "A heart grows back every 30 minutes, or refill now with coins.";
+    document.querySelector("#play-again").innerHTML = 'Refill hearts <span aria-hidden="true">♡</span>';
+    render();
+    return;
+  }
   state.generation += 1;
   state.board = createBoard();
   state.score = 0;
@@ -364,6 +485,7 @@ function restart() {
   overlay.hidden = true;
   setHint("Find a little magic");
   render();
+  startRoundClock();
   boardElement.firstElementChild.focus();
   announce("New game. Match three or more pieces to gather stardust.");
 }
@@ -392,6 +514,9 @@ installButton.addEventListener("click", async () => {
 });
 
 render();
+if (state.hearts > 0) startRoundClock();
+else restart();
+window.setInterval(() => { if (state.ended) updateDashboard(); }, 1000);
 
 if (!hasPossibleMoves(state.board) || findMatches(state.board).size > 0) {
   state.board = createBoard();

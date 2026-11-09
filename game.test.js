@@ -11,7 +11,7 @@ import {
   isValidSwap,
   resolveMatches,
   swapTiles
-} from "./game.js";
+} from "./src/game.js";
 
 function patternedBoard(size = BOARD_SIZE) {
   return Array.from({ length: size }, (_, row) =>

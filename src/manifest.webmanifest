@@ -1,0 +1,12 @@
+{
+  "name": "Astra Grove — Starlight Puzzle",
+  "short_name": "Astra Grove",
+  "description": "A calm, original match-three puzzle beneath the night sky.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#10131d",
+  "theme_color": "#111421",
+  "icons": [{ "src": "./icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

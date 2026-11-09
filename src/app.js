@@ -10,6 +10,7 @@ import {
   resolveMatches,
   swapTiles
 } from "./game.js";
+import { prepareGameBreakAd, showGameBreakAd } from "./ads.js";
 
 const pieceNames = ["Moonbud", "Comet", "Bloom", "Prism", "Leaflight", "Sunseed"];
 const pieceIcons = [
@@ -32,6 +33,7 @@ const hintElement = document.querySelector("#hint");
 const announcer = document.querySelector("#announcer");
 const overlay = document.querySelector("#game-over");
 const soundButton = document.querySelector("#sound-toggle");
+const installButton = document.querySelector("#install-button");
 
 const state = {
   board: createBoard(),
@@ -48,6 +50,8 @@ const state = {
 let audioContext = null;
 let pointerStart = null;
 let suppressClicksUntil = 0;
+let completedGames = 0;
+let installPrompt = null;
 
 function readPreference(key) {
   try {
@@ -125,7 +129,7 @@ function render({ swapCells = [], invalidCells = [], refillCells = [] } = {}) {
       if (tile.special) button.classList.add(`is-special`, `is-special-${tile.special}`);
       button.dataset.index = String(index);
       button.setAttribute("aria-label", cellLabel(tile, row, column));
-      button.innerHTML = `${pieceIcons[tile.type]}${tile.special ? '<span class="special-mark" aria-hidden="true">✦</span>' : ""}`;
+      button.innerHTML = `${pieceIcons[tile.type]}${tile.special ? '<span class="special-mark" aria-hidden="true">Γ£ª</span>' : ""}`;
       fragment.append(button);
     }
   }
@@ -151,7 +155,7 @@ function announce(message) {
 }
 
 function setHint(message, tone = "default") {
-  hintElement.innerHTML = `${message}<span aria-hidden="true">${tone === "special" ? " ✧" : " ✦"}</span>`;
+  hintElement.innerHTML = `${message}<span aria-hidden="true">${tone === "special" ? " Γ£º" : " Γ£ª"}</span>`;
   hintElement.classList.toggle("hint-label--special", tone === "special");
 }
 
@@ -168,6 +172,8 @@ function endGame(won) {
   announce(won ? "You win. The grove goal is complete." : "Game over. No moves remain.");
   playNote(won ? 784 : 330, 0.4, 0.12);
   if (won) playNote(988, 0.5, 0.1, 0.14);
+  completedGames += 1;
+  if (completedGames % 4 === 0) void showGameBreakAd();
   document.querySelector("#play-again").focus();
 }
 
@@ -225,7 +231,7 @@ async function attemptSwap(firstIndex, secondIndex) {
     setHint(
       result.created
         ? result.created.special === "wild" ? "A starlight piece appeared" : "A line-clearing piece appeared"
-        : cascade > 1 ? `Lovely cascade ×${cascade}` : "A little more stardust",
+        : cascade > 1 ? `Lovely cascade ├ù${cascade}` : "A little more stardust",
       result.created ? "special" : "default"
     );
     announce(`${result.clearedCount} pieces cleared${cascade > 1 ? `, cascade ${cascade}` : ""}.`);
@@ -351,9 +357,28 @@ soundButton.addEventListener("click", () => {
   }
 });
 
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  installPrompt = event;
+  installButton.hidden = false;
+});
+
+installButton.addEventListener("click", async () => {
+  if (!installPrompt) return;
+  await installPrompt.prompt();
+  installPrompt = null;
+  installButton.hidden = true;
+});
+
 render();
 
 if (!hasPossibleMoves(state.board) || findMatches(state.board).size > 0) {
   state.board = createBoard();
   render();
 }
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+}
+
+void prepareGameBreakAd();

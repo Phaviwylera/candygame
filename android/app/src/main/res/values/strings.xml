@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Astra Grove</string>
+    <string name="title_activity_main">Astra Grove</string>
+    <string name="package_name">game.astragrove.puzzle</string>
+    <string name="custom_url_scheme">game.astragrove.puzzle</string>
+    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
+</resources>

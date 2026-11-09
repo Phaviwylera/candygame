@@ -1,0 +1,6 @@
+{
+  "appId": "game.astragrove.puzzle",
+  "appName": "Astra Grove",
+  "webDir": "dist",
+  "server": { "androidScheme": "https" }
+}

@@ -3,6 +3,10 @@ import assert from "node:assert/strict";
 import {
   BOARD_SIZE,
   MOVE_LIMIT,
+  MAX_LEVEL,
+  createLevelBoard,
+  countObstacles,
+  getLevelConfig,
   createBoard,
   findMatches,
   findRuns,
@@ -200,4 +204,43 @@ test("swaps the requested tiles in place", () => {
   swapTiles(board, [0, 0], [0, 1]);
   assert.equal(board[0][0], second);
   assert.equal(board[0][1], first);
+});
+
+
+test("creates 2,000 levels with four readable move-based difficulty bands", () => {
+  assert.equal(MAX_LEVEL, 2000);
+  assert.deepEqual([1, 101, 351, 801].map((level) => getLevelConfig(level).difficulty), ["Easy", "Medium", "Hard", "Super Hard"]);
+  assert.deepEqual([1, 101, 351, 801].map((level) => getLevelConfig(level).moves), [25, 22, 19, 17]);
+  assert.equal(getLevelConfig(2000).moves, 11);
+  assert.equal(getLevelConfig(2001).level, 2000);
+});
+
+test("level boards include destructible blockers while preserving a playable start", () => {
+  for (const level of [8, 101, 351, 801, 2000]) {
+    const board = createLevelBoard(level);
+    assert.equal(countObstacles(board), getLevelConfig(level).obstacleCount);
+    assert.equal(findMatches(board).size, 0);
+    assert.equal(hasPossibleMoves(board), true);
+  }
+  assert.ok(createLevelBoard(2000).flat().some((tile) => tile.obstacle && tile.hits === 2));
+});
+
+test("a four-candy square creates a fish special", () => {
+  const board = patternedBoard();
+  for (const [row, column] of [[0, 0], [0, 1], [1, 0], [1, 1]]) board[row][column].type = 5;
+  const result = resolveMatches(board, () => 0);
+  assert.equal(result.created.special, "fish");
+  assert.ok(board.flat().some((tile) => tile?.special === "fish"));
+});
+
+test("activating a fish chooses a blocker-adjacent candy and damages its crate", () => {
+  const board = patternedBoard();
+  board[2][2] = { type: null, special: null, obstacle: true, hits: 1 };
+  board[2][1] = { ...board[2][1], special: "fish" };
+  const result = resolveMatches(board, () => 0, null, [[2, 1]]);
+  const fish = result.activatedSpecials.find((effect) => effect.special === "fish");
+  assert.ok(fish);
+  assert.ok(Math.abs(fish.target[0] - 2) + Math.abs(fish.target[1] - 2) === 1);
+  assert.equal(countObstacles(board), 0);
+  assert.equal(result.obstaclesRemoved, 1);
 });

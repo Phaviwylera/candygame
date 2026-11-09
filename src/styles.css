@@ -1029,3 +1029,38 @@ h1 span { color:#fff; }
 @media (prefers-reduced-motion:reduce) {
   .piece.is-falling,.piece.is-clearing,.piece.is-clearing svg,.match-burst::before,.match-burst b { animation-duration:.01ms!important; }
 }
+
+
+/* Level progression and tactile obstacle/power feedback */
+.resource-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.board-heading-label i { margin-left: 7px; padding: 3px 7px; border-radius: 999px; background: rgb(255 211 117 / 15%); color: #ffe2a0; font-size: .62rem; font-style: normal; font-weight: 900; letter-spacing: .08em; }
+.goal-caption i { color: #e2ba72; font-style: normal; font-weight: 800; }
+.board-wrap { position: relative; }
+.level-intro { position: absolute; z-index: 30; inset: 0; display: grid; align-content: center; justify-items: center; gap: 7px; color: #fff8e8; text-align: center; background: radial-gradient(ellipse at center, rgb(55 83 109 / 88%), rgb(18 28 44 / 95%) 74%); backdrop-filter: blur(7px); animation: intro-in .38s cubic-bezier(.2,.9,.25,1.2) both; }
+.level-intro[hidden] { display: none; }
+.level-intro p { margin: 0; color: #ffd47e; font-size: .76rem; font-weight: 900; letter-spacing: .22em; }
+.level-intro h2 { margin: 0; font-family: var(--display); font-size: clamp(2.1rem, 9vw, 3.1rem); font-weight: 900; line-height: 1; text-shadow: 0 3px 0 #70523d, 0 7px 18px #0008; }
+.level-intro h2 strong { color: #fff1b0; }
+.level-intro > span:last-child { padding: 7px 15px; border: 1px solid #fff7; border-radius: 999px; background: linear-gradient(#ffe49c,#e8a94e); color: #573719; font-size: .72rem; font-weight: 900; letter-spacing: .08em; box-shadow: 0 4px 0 #935c28; }
+.intro-spark { color: #fff0a7; font-size: 2.4rem; filter: drop-shadow(0 0 12px #ffcf53); animation: intro-spark 1s ease-in-out infinite alternate; }
+.obstacle { position: relative; overflow: hidden; border: 2px solid #76503c !important; border-radius: 9px !important; background: linear-gradient(145deg,#c18b5d,#805038 58%,#513626) !important; box-shadow: inset 2px 2px 3px #f5c794aa, inset -3px -4px 5px #29190faa, 0 3px 0 #302017 !important; cursor: default; }
+.obstacle-art { position: absolute; inset: 13%; border: 2px solid #e2b47a; border-radius: 4px; box-shadow: inset 0 0 0 2px #68452e; background: repeating-linear-gradient(0deg, transparent 0 9px, #6c452d 9px 12px), linear-gradient(90deg,#a9744b,#c18b5a,#8c5d3d); }
+.obstacle-art i { position: absolute; width: 140%; height: 3px; left: -20%; top: 30%; background: #e0b279; transform: rotate(40deg); box-shadow: 0 1px 0 #573a28; }
+.obstacle-art i:last-child { transform: rotate(-40deg); }
+.obstacle--cracked { filter: saturate(.8) brightness(.88); }
+.obstacle--cracked::after { content: ""; position: absolute; inset: 12%; z-index: 2; background: linear-gradient(125deg,transparent 47%,#f9e3bd 48% 51%,transparent 52%); }
+.obstacle-hit { animation: crate-hit .28s ease-in-out 2; }
+.power-sweep { position: absolute; z-index: 22; pointer-events: none; border-radius: 999px; background: linear-gradient(90deg,transparent,#fff6a9 15%,#fff 50%,#ff9d65 82%,transparent); filter: drop-shadow(0 0 8px #fff2a2); }
+.power-sweep--row { left: 0; top: var(--effect-y); width: 100%; height: 9px; transform: translateY(-50%) scaleX(0); animation: sweep-row .38s ease-out forwards; }
+.power-sweep--column { left: var(--effect-x); top: 0; width: 9px; height: 100%; transform: translateX(-50%) scaleY(0); animation: sweep-column .38s ease-out forwards; }
+.power-burst { position: absolute; z-index: 23; width: 20px; height: 20px; border: 4px solid #fff3a5; border-radius: 50%; pointer-events: none; transform: translate(-50%,-50%); animation: bomb-ring .34s ease-out forwards; }
+.fish-flight { position: absolute; z-index: 25; width: 38px; height: 27px; pointer-events: none; filter: drop-shadow(0 2px 2px #3b225a) drop-shadow(0 0 6px #fff2aa); transform: translate(-50%,-50%) rotate(-12deg); animation: fish-flight .5s cubic-bezier(.3,.75,.4,1) forwards; }
+.fish-flight svg { width: 100%; height: 100%; overflow: visible; }
+@keyframes intro-in { from { opacity: 0; transform: scale(.84); } to { opacity: 1; transform: scale(1); } }
+@keyframes intro-spark { to { transform: rotate(18deg) scale(1.2); } }
+@keyframes crate-hit { 25% { transform: translateX(-3px) rotate(-2deg); } 75% { transform: translateX(3px) rotate(2deg); } }
+@keyframes sweep-row { 0% { transform: translateY(-50%) scaleX(0); opacity: .4; } 22% { transform: translateY(-50%) scaleX(1); opacity: 1; } 100% { transform: translateY(-50%) scaleX(1.12); opacity: 0; } }
+@keyframes sweep-column { 0% { transform: translateX(-50%) scaleY(0); opacity: .4; } 22% { transform: translateX(-50%) scaleY(1); opacity: 1; } 100% { transform: translateX(-50%) scaleY(1.12); opacity: 0; } }
+@keyframes bomb-ring { to { width: 150%; aspect-ratio: 1; opacity: 0; border-width: 1px; } }
+@keyframes fish-flight { 0% { opacity: 0; transform: translate(-50%,-50%) rotate(-35deg) scale(.5); } 18% { opacity: 1; } 100% { opacity: 0; transform: translate(calc(-50% + var(--fish-x)),calc(-50% + var(--fish-y))) rotate(8deg) scale(1.1); } }
+@media (prefers-reduced-motion: reduce) { .level-intro,.intro-spark,.obstacle-hit,.power-sweep,.power-burst,.fish-flight { animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }

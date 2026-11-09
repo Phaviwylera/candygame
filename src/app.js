@@ -1,8 +1,9 @@
 import {
   BOARD_SIZE,
-  MOVE_LIMIT,
-  SCORE_GOAL,
-  createBoard,
+  MAX_LEVEL,
+  createLevelBoard,
+  countObstacles,
+  getLevelConfig,
   findMatches,
   hasPossibleMoves,
   isAdjacent,
@@ -31,29 +32,31 @@ const boardLevelElement = document.querySelector("#board-level");
 const heartsElement = document.querySelector("#hearts");
 const heartClockElement = document.querySelector("#heart-clock");
 const coinsElement = document.querySelector("#coins");
-const timerElement = document.querySelector("#timer");
+const obstacleLabel = document.querySelector("#obstacle-label");
+const introOverlay = document.querySelector("#level-intro");
+const introKind = document.querySelector("#level-kind");
+const introNumber = document.querySelector("#level-intro-number");
+const introMoves = document.querySelector("#level-intro-moves");
 const buyHeartsButton = document.querySelector("#buy-hearts");
 const HEART_CAP = 5;
 const HEART_REGEN_MS = 30 * 60 * 1000;
-const ROUND_SECONDS = 90;
 
 function loadProgress() {
   try {
     const saved = JSON.parse(localStorage.getItem("astra-grove-town-progress") || "{}");
-    return { level: Math.max(1, Number(saved.level) || 1), coins: saved.coins == null ? 250 : Math.max(0, Number(saved.coins) || 0), hearts: Math.max(0, Math.min(HEART_CAP, Number(saved.hearts ?? HEART_CAP))), heartAt: Number(saved.heartAt) || Date.now() };
+    return { level: Math.max(1, Math.min(MAX_LEVEL, Number(saved.level) || 1)), coins: saved.coins == null ? 250 : Math.max(0, Number(saved.coins) || 0), hearts: Math.max(0, Math.min(HEART_CAP, Number(saved.hearts ?? HEART_CAP))), heartAt: Number(saved.heartAt) || Date.now() };
   } catch { return { level: 1, coins: 250, hearts: HEART_CAP, heartAt: Date.now() }; }
 }
 const progressSave = loadProgress();
 
 const state = {
-  board: createBoard(),
+  board: createLevelBoard(progressSave.level),
   score: 0,
-  moves: MOVE_LIMIT,
+  moves: getLevelConfig(progressSave.level).moves,
   level: progressSave.level,
   coins: progressSave.coins,
   hearts: progressSave.hearts,
   heartAt: progressSave.heartAt,
-  seconds: ROUND_SECONDS,
   selected: null,
   busy: false,
   ended: false,
@@ -67,12 +70,10 @@ let pointerStart = null;
 let suppressClicksUntil = 0;
 let completedGames = 0;
 let installPrompt = null;
-let roundInterval = null;
-
-function goalForLevel() { return SCORE_GOAL + (state.level - 1) * 110; }
-function durationForLevel() { return Math.max(55, ROUND_SECONDS - Math.floor((state.level - 1) / 4) * 3); }
+function goalForLevel() { return getLevelConfig(state.level).scoreGoal; }
+function levelComplete() { return state.score >= goalForLevel() && countObstacles(state.board) === 0; }
 function saveProgress() {
-  const savedLevel = state.ended && state.score >= goalForLevel() ? state.level + 1 : state.level;
+  const savedLevel = state.ended && levelComplete() ? Math.min(MAX_LEVEL, state.level + 1) : state.level;
   savePreference("astra-grove-town-progress", JSON.stringify({ level: savedLevel, coins: state.coins, hearts: state.hearts, heartAt: state.heartAt }));
 }
 
@@ -85,18 +86,6 @@ function updateHearts() {
     if (state.hearts >= HEART_CAP) state.heartAt = Date.now();
     saveProgress();
   }
-}
-
-function startRoundClock() {
-  window.clearInterval(roundInterval);
-  state.seconds = durationForLevel();
-  updateDashboard();
-  roundInterval = window.setInterval(() => {
-    if (state.ended || state.busy) return;
-    state.seconds -= 1;
-    updateDashboard();
-    if (state.seconds <= 0) endGame(false, "time");
-  }, 1000);
 }
 
 function readPreference(key) {
@@ -169,6 +158,7 @@ function formatScore(score) {
 }
 
 function cellLabel(tile, row, column) {
+  if (tile.obstacle) return `Wooden crate, ${tile.hits} hits remaining, row ${row + 1}, column ${column + 1}`;
   const piece = pieceNames[tile.type];
   const special = tile.special
     ? `, ${tile.special === "wild" ? "starlight" : `line-clearing ${tile.special}`} special`
@@ -184,8 +174,9 @@ function render({ swapCells = [], invalidCells = [], swapOffsets = {}, fallOffse
       const tile = state.board[row][column];
       const button = document.createElement("button");
       button.type = "button";
-      button.className = `piece piece--${tile.type}`;
-      button.disabled = state.ended;
+      button.className = tile.obstacle ? "piece obstacle" : `piece piece--${tile.type}`;
+      if (tile.obstacle && tile.hits > 1) button.classList.add("obstacle--cracked");
+      button.disabled = state.ended || tile.obstacle;
       if (state.selected === index) button.classList.add("is-selected");
       if (swapCells.includes(index)) button.classList.add("is-swapping");
       if (swapOffsets[index]) {
@@ -201,12 +192,79 @@ function render({ swapCells = [], invalidCells = [], swapOffsets = {}, fallOffse
       if (tile.special) button.classList.add(`is-special`, `is-special-${tile.special}`);
       button.dataset.index = String(index);
       button.setAttribute("aria-label", cellLabel(tile, row, column));
-      button.innerHTML = `${pieceIcons[tile.type]}${tile.special ? '<span class="special-mark" aria-hidden="true">✦</span>' : ""}`;
+      button.innerHTML = tile.obstacle ? '<span class="obstacle-art" aria-hidden="true"><i></i><i></i><i></i></span>' : `${pieceIcons[tile.type]}${tile.special ? `<span class="special-mark" aria-hidden="true">${tile.special === "bomb" ? "✹" : tile.special === "fish" ? "≈" : tile.special === "row" ? "↔" : tile.special === "column" ? "↕" : "✦"}</span>` : ""}`;
       fragment.append(button);
     }
   }
   boardElement.replaceChildren(fragment);
   updateDashboard();
+}
+
+function showLevelIntro() {
+  const config = getLevelConfig(state.level);
+  state.busy = true;
+  introKind.textContent = config.difficulty.toUpperCase();
+  introNumber.textContent = String(state.level);
+  introMoves.textContent = `${config.moves} MOVES`;
+  introOverlay.hidden = false;
+  const generation = state.generation;
+  window.setTimeout(() => {
+    if (generation !== state.generation) return;
+    introOverlay.hidden = true;
+    state.busy = false;
+    boardElement.querySelector(".piece:not(.obstacle)")?.focus();
+  }, 1150);
+}
+
+function animateObstacleHits(cells) {
+  for (const index of cells) {
+    const cell = boardElement.querySelector(`[data-index="${index}"]`);
+    if (cell?.classList.contains("obstacle")) cell.classList.add("obstacle-hit");
+  }
+}
+
+function animatePowerEffects(activations = []) {
+  let longest = 0;
+  const boardRect = boardElement.getBoundingClientRect();
+  for (const effect of activations) {
+    const sourceIndex = effect.cell[0] * BOARD_SIZE + effect.cell[1];
+    const source = boardElement.querySelector(`[data-index="${sourceIndex}"]`);
+    if (!source) continue;
+    const sourceRect = source.getBoundingClientRect();
+    const x = sourceRect.left - boardRect.left + sourceRect.width / 2;
+    const y = sourceRect.top - boardRect.top + sourceRect.height / 2;
+    const effectNode = document.createElement("span");
+    if (effect.special === "row" || effect.special === "column") {
+      effectNode.className = `power-sweep power-sweep--${effect.special}`;
+      effectNode.style.setProperty("--effect-x", `${x}px`);
+      effectNode.style.setProperty("--effect-y", `${y}px`);
+      boardElement.append(effectNode);
+      window.setTimeout(() => effectNode.remove(), 430);
+      longest = Math.max(longest, 390);
+    } else if (effect.special === "fish" && effect.target) {
+      const targetIndex = effect.target[0] * BOARD_SIZE + effect.target[1];
+      const target = boardElement.querySelector(`[data-index="${targetIndex}"]`);
+      if (!target) continue;
+      const targetRect = target.getBoundingClientRect();
+      effectNode.className = "fish-flight";
+      effectNode.innerHTML = '<svg viewBox="0 0 48 32" aria-hidden="true"><path d="M4 16c7-10 21-13 31-4l9-7-2 11 2 11-9-7C25 29 11 26 4 16Z" fill="#ffe68a" stroke="#99509a" stroke-width="2.5"/><circle cx="30" cy="13" r="2" fill="#352d52"/><path d="M15 14c4 1 7 1 11 0" fill="none" stroke="#fff7ce" stroke-width="2" stroke-linecap="round"/></svg>';
+      effectNode.style.left = `${x}px`;
+      effectNode.style.top = `${y}px`;
+      effectNode.style.setProperty("--fish-x", `${targetRect.left - sourceRect.left}px`);
+      effectNode.style.setProperty("--fish-y", `${targetRect.top - sourceRect.top}px`);
+      boardElement.append(effectNode);
+      window.setTimeout(() => effectNode.remove(), 560);
+      longest = Math.max(longest, 500);
+    } else {
+      effectNode.className = "power-burst";
+      effectNode.style.left = `${x}px`;
+      effectNode.style.top = `${y}px`;
+      boardElement.append(effectNode);
+      window.setTimeout(() => effectNode.remove(), 380);
+      longest = Math.max(longest, 340);
+    }
+  }
+  return longest;
 }
 
 function animateClears(clearedCells) {
@@ -253,8 +311,11 @@ function getFallOffsets(previousPositions) {
 function updateDashboard() {
   updateHearts();
   const goal = goalForLevel();
+  const config = getLevelConfig(state.level);
   levelElement.textContent = String(state.level);
   boardLevelElement.textContent = String(state.level);
+  document.querySelector("#difficulty-label").textContent = config.difficulty.toUpperCase();
+  obstacleLabel.textContent = `${countObstacles(state.board)} crates`;
   heartsElement.textContent = `${state.hearts}/${HEART_CAP}`;
   coinsElement.textContent = String(state.coins);
   buyHeartsButton.disabled = state.hearts >= HEART_CAP || state.coins < 250;
@@ -263,8 +324,6 @@ function updateDashboard() {
   if (state.ended && state.score < goalForLevel() && state.hearts > 0) continueButton.innerHTML = 'Try again <span aria-hidden="true">↗</span>';
   const nextHeart = Math.max(0, HEART_REGEN_MS - (Date.now() - state.heartAt));
   heartClockElement.textContent = state.hearts >= HEART_CAP ? "FULL" : `${Math.floor(nextHeart / 60000)}:${String(Math.floor(nextHeart / 1000) % 60).padStart(2, "0")}`;
-  timerElement.textContent = `${String(Math.floor(state.seconds / 60)).padStart(2, "0")}:${String(state.seconds % 60).padStart(2, "0")}`;
-  timerElement.classList.toggle("timer-low", state.seconds <= 15);
   scoreElement.textContent = formatScore(state.score);
   movesElement.textContent = String(state.moves);
   movesElement.classList.toggle("moves-value--low", state.moves <= 5);
@@ -289,18 +348,18 @@ function setHint(message, tone = "default") {
 
 function endGame(won, reason = "moves") {
   state.ended = true;
-  window.clearInterval(roundInterval);
   if (won) {
     const reward = 60 + Math.min(state.level * 3, 90);
     state.coins += reward;
     document.querySelector("#result-kicker").textContent = `LEVEL ${state.level} COMPLETE · +${reward} COINS`;
     document.querySelector("#result-title").textContent = "Your grove is growing!";
-    document.querySelector("#result-copy").textContent = `Lovely work! Level ${state.level + 1} is ready when you are.`;
-    document.querySelector("#play-again").innerHTML = `Level ${state.level + 1} <span aria-hidden="true">↗</span>`;
+    const finalLevel = state.level >= MAX_LEVEL;
+    document.querySelector("#result-copy").textContent = finalLevel ? "You completed all 2,000 levels. Your grove is legendary!" : `Lovely work! Level ${state.level + 1} is ready when you are.`;
+    document.querySelector("#play-again").innerHTML = finalLevel ? 'Play again <span aria-hidden="true">↗</span>' : `Level ${state.level + 1} <span aria-hidden="true">↗</span>`;
   } else {
     state.hearts = Math.max(0, state.hearts - 1);
     if (state.hearts === HEART_CAP - 1) state.heartAt = Date.now();
-    document.querySelector("#result-kicker").textContent = reason === "time" ? "TIME'S UP" : "LEVEL NOT QUITE";
+    document.querySelector("#result-kicker").textContent = "LEVEL NOT QUITE";
     document.querySelector("#result-title").textContent = state.hearts ? "Ready for another try?" : "Your hearts need a rest";
     document.querySelector("#result-copy").textContent = state.hearts
       ? `You have ${state.hearts} ${state.hearts === 1 ? "heart" : "hearts"} left. Your best grows with every try.`
@@ -311,7 +370,7 @@ function endGame(won, reason = "moves") {
   state.selected = null;
   render();
   overlay.hidden = false;
-  announce(won ? `Level ${state.level} complete. Coins earned.` : reason === "time" ? "Time is up. A heart was used." : "Level ended. A heart was used.");
+  announce(won ? `Level ${state.level} complete. Coins earned.` : "Level ended. A heart was used.");
   playNote(won ? 784 : 330, 0.4, 0.12);
   if (won) playNote(988, 0.5, 0.1, 0.14);
   completedGames += 1;
@@ -373,22 +432,24 @@ async function attemptSwap(firstIndex, secondIndex) {
     const fallOffsets = getFallOffsets(previousPositions);
     cascade += 1;
     state.score += result.clearedCount * 10 * cascade;
-    if (result.created) state.score += result.created.special === "wild" ? 50 : 30;
+    if (result.created) state.score += ["wild", "bomb"].includes(result.created.special) ? 50 : 30;
     if (state.score > state.best) {
       state.best = state.score;
       savePreference("astra-grove-best", String(state.best));
     }
     animateClears(result.clearedCells);
+    animateObstacleHits(result.damagedCells ?? []);
+    const effectDuration = Math.max(animatePowerEffects(result.activatedSpecials), result.damagedCells?.length ? 300 : 0);
     playMatch(cascade);
     setHint(
       result.created
-        ? result.created.special === "wild" ? "A starlight piece appeared" : "A line-clearing piece appeared"
+        ? result.created.special === "wild" ? "A starlight piece appeared" : result.created.special === "bomb" ? "A wrapped burst appeared" : result.created.special === "fish" ? "A helpful fish appeared" : "A line-clearing piece appeared"
         : cascade > 1 ? `Lovely cascade ×${cascade}` : "A little more stardust",
       result.created ? "special" : "default"
     );
     announce(`${result.clearedCount} pieces cleared${cascade > 1 ? `, cascade ${cascade}` : ""}.`);
     preferredCell = null;
-    await delay(190);
+    await delay(Math.max(190, effectDuration));
     if (generation !== state.generation) return;
     render({ fallOffsets });
     await delay(430);
@@ -398,12 +459,12 @@ async function attemptSwap(firstIndex, secondIndex) {
   state.busy = false;
   render();
 
-  if (state.score >= goalForLevel()) {
+  if (levelComplete()) {
     endGame(true);
   } else if (state.moves <= 0) {
     endGame(false);
   } else if (!hasPossibleMoves(state.board)) {
-    state.board = createBoard();
+    state.board = createLevelBoard(state.level);
     setHint("A fresh patch of sky");
     announce("The grove reshuffled to make room for more matches.");
   } else if (cascade === 0) {
@@ -486,7 +547,7 @@ boardElement.addEventListener("keydown", (event) => {
 
 document.querySelector("#reset-button").addEventListener("click", () => {
   if (state.ended || state.busy) return;
-  const used = state.moves < MOVE_LIMIT || state.score > 0 || state.seconds < durationForLevel();
+  const used = state.moves < getLevelConfig(state.level).moves || state.score > 0;
   if (used) {
     state.hearts = Math.max(0, state.hearts - 1);
     if (state.hearts === HEART_CAP - 1) state.heartAt = Date.now();
@@ -515,7 +576,7 @@ function continueFromOverlay() {
     state.heartAt = Date.now();
     saveProgress();
   }
-  if (state.score >= goalForLevel()) state.level += 1;
+  if (levelComplete()) state.level = state.level >= MAX_LEVEL ? 1 : state.level + 1;
   overlay.hidden = true;
   restart();
 }
@@ -532,17 +593,16 @@ function restart() {
     return;
   }
   state.generation += 1;
-  state.board = createBoard();
+  state.board = createLevelBoard(state.level);
   state.score = 0;
-  state.moves = MOVE_LIMIT;
+  state.moves = getLevelConfig(state.level).moves;
   state.selected = null;
-  state.busy = false;
+  state.busy = true;
   state.ended = false;
   overlay.hidden = true;
   setHint("Find a little magic");
   render();
-  startRoundClock();
-  boardElement.firstElementChild.focus();
+  showLevelIntro();
   announce("New game. Match three or more pieces to gather stardust.");
 }
 
@@ -570,12 +630,12 @@ installButton.addEventListener("click", async () => {
 });
 
 render();
-if (state.hearts > 0) startRoundClock();
+if (state.hearts > 0) showLevelIntro();
 else restart();
-window.setInterval(() => { if (state.ended) updateDashboard(); }, 1000);
+window.setInterval(updateDashboard, 1000);
 
 if (!hasPossibleMoves(state.board) || findMatches(state.board).size > 0) {
-  state.board = createBoard();
+  state.board = createLevelBoard(state.level);
   render();
 }
 

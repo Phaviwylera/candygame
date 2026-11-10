@@ -32,6 +32,31 @@ export function countObstacles(board) {
   return board.reduce((total, row) => total + row.filter((tile) => tile?.obstacle).length, 0);
 }
 
+const SHAPES = [
+  [".######.", "########", "########", "########", "########", "########", ".######.", "..####.."],
+  ["..####..", ".######.", "########", "########", "########", "########", ".######.", "..####.."],
+  [".######.", "########", "########", "########", "..######", "...#####", "...#####", "....####"],
+  ["########", "##..####", "########", "########", "########", "####..##", "########", "########"]
+];
+
+export function getLevelShape(level, size = BOARD_SIZE) {
+  const current = Math.max(1, Math.floor(level));
+  const config = getLevelConfig(current);
+  const templateIndex = current < 5 ? 1 : ((current * 7 + Math.floor(current / 25)) % SHAPES.length);
+  const template = SHAPES[templateIndex];
+  return Array.from({ length: size }, (_, row) =>
+    Array.from({ length: size }, (_, column) => {
+      const sourceRow = Math.min(7, Math.floor(row * 8 / size));
+      const sourceColumn = Math.min(7, Math.floor(column * 8 / size));
+      const isOpen = template[sourceRow][sourceColumn] !== ".";
+      if (!isOpen) return false;
+      // Hard maps keep a few more lanes open; later stages add cut-ins instead of closing the whole board.
+      if (config.difficulty === "Super Hard" && current > 1500 && row === 0 && column === size - 1 && current % 2 === 0) return false;
+      return true;
+    })
+  );
+}
+
 export function findRuns(board) {
   const runs = [];
   const size = board.length;
@@ -40,12 +65,12 @@ export function findRuns(board) {
     let start = 0;
     while (start < size) {
       const tile = board[row][start];
-      if (!tile || tile.obstacle) {
+      if (!tile || tile.obstacle || tile.void) {
         start += 1;
         continue;
       }
       let end = start + 1;
-      while (end < size && !board[row][end]?.obstacle && board[row][end]?.type === tile.type) end += 1;
+      while (end < size && !board[row][end]?.obstacle && !board[row][end]?.void && board[row][end]?.type === tile.type) end += 1;
       if (end - start >= 3) {
         runs.push({
           axis: "row",
@@ -62,12 +87,12 @@ export function findRuns(board) {
     let start = 0;
     while (start < size) {
       const tile = board[start][column];
-      if (!tile || tile.obstacle) {
+      if (!tile || tile.obstacle || tile.void) {
         start += 1;
         continue;
       }
       let end = start + 1;
-      while (end < size && !board[end][column]?.obstacle && board[end][column]?.type === tile.type) end += 1;
+      while (end < size && !board[end][column]?.obstacle && !board[end][column]?.void && board[end][column]?.type === tile.type) end += 1;
       if (end - start >= 3) {
         runs.push({
           axis: "column",
@@ -95,7 +120,7 @@ export function findRuns(board) {
     for (let column = 0; column < size - 1; column += 1) {
       const cells = [[row, column], [row + 1, column], [row, column + 1], [row + 1, column + 1]];
       const first = board[row][column];
-      if (first && !first.obstacle && cells.slice(1).every(([r, c]) => !board[r][c]?.obstacle && board[r][c]?.type === first.type)) {
+      if (first && !first.obstacle && !first.void && cells.slice(1).every(([r, c]) => !board[r][c]?.obstacle && !board[r][c]?.void && board[r][c]?.type === first.type)) {
         runs.push({ axis: "square", type: first.type, length: 4, cells });
       }
     }
@@ -122,7 +147,7 @@ export function isValidSwap(board, first, second) {
   if (!isAdjacent(first, second)) return false;
   const firstTile = board[first[0]][first[1]];
   const secondTile = board[second[0]][second[1]];
-  if (!firstTile || !secondTile || firstTile.obstacle || secondTile.obstacle) return false;
+  if (!firstTile || !secondTile || firstTile.obstacle || secondTile.obstacle || firstTile.void || secondTile.void) return false;
   if (firstTile.special || secondTile.special) return true;
 
   swapTiles(board, first, second);
@@ -172,12 +197,18 @@ export function createBoard(random = Math.random, size = BOARD_SIZE) {
 
 export function createLevelBoard(levelOrConfig, random = Math.random, size = BOARD_SIZE) {
   const config = typeof levelOrConfig === "number" ? getLevelConfig(levelOrConfig) : levelOrConfig;
+  const shape = getLevelShape(config.level, size);
   const cells = [];
   for (let row = 1; row < size - 1; row += 1) {
-    for (let column = 1; column < size - 1; column += 1) cells.push([row, column]);
+    for (let column = 1; column < size - 1; column += 1) if (shape[row][column]) cells.push([row, column]);
   }
-  for (let attempt = 0; attempt < 80; attempt += 1) {
+  for (let attempt = 0; attempt < 160; attempt += 1) {
     const board = createBoard(random, size);
+    for (let row = 0; row < size; row += 1) {
+      for (let column = 0; column < size; column += 1) {
+        if (!shape[row][column]) board[row][column] = { type: null, special: null, void: true };
+      }
+    }
     const ordered = [...cells].sort((a, b) => {
       const rank = ([row, column]) => ((row * 37 + column * 19 + config.level * 13 + attempt * 29) % 101);
       return rank(a) - rank(b);
@@ -203,7 +234,7 @@ function chooseFishTarget(board, excluded, source) {
     for (let column = 0; column < board[row].length; column += 1) {
       const cellKey = key(row, column);
       const tile = board[row][column];
-      if (!tile || tile.obstacle || excluded.has(cellKey) || (row === source[0] && column === source[1])) continue;
+      if (!tile || tile.obstacle || tile.void || excluded.has(cellKey) || (row === source[0] && column === source[1])) continue;
       let obstacleNeighbors = 0;
       let colorNeighbors = 0;
       for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
@@ -254,7 +285,7 @@ export function resolveMatches(board, random = Math.random, preferredCell = null
   const activatedSpecials = [];
   const addCandy = (row, column) => {
     const tile = board[row]?.[column];
-    if (tile && !tile.obstacle) cleared.add(key(row, column));
+    if (tile && !tile.obstacle && !tile.void) cleared.add(key(row, column));
   };
   for (const cellKey of matched) {
     const [row, column] = cellKey.split(",").map(Number);
@@ -284,7 +315,7 @@ export function resolveMatches(board, random = Math.random, preferredCell = null
     } else if (tile.special === "wild") {
       for (let nextRow = 0; nextRow < board.length; nextRow += 1) {
         for (let nextColumn = 0; nextColumn < board[nextRow].length; nextColumn += 1) {
-          if (!board[nextRow][nextColumn]?.obstacle && board[nextRow][nextColumn]?.type === tile.type) addCandy(nextRow, nextColumn);
+          if (!board[nextRow][nextColumn]?.obstacle && !board[nextRow][nextColumn]?.void && board[nextRow][nextColumn]?.type === tile.type) addCandy(nextRow, nextColumn);
         }
       }
     }
@@ -292,7 +323,7 @@ export function resolveMatches(board, random = Math.random, preferredCell = null
     for (const cellKey of cleared) {
       const [nextRow, nextColumn] = cellKey.split(",").map(Number);
       const candidate = board[nextRow][nextColumn];
-      if (candidate?.special && !candidate.obstacle && !activatedTiles.has(cellKey) && !queue.some(([queuedRow, queuedColumn]) => queuedRow === nextRow && queuedColumn === nextColumn)) {
+      if (candidate?.special && !candidate.obstacle && !candidate.void && !activatedTiles.has(cellKey) && !queue.some(([queuedRow, queuedColumn]) => queuedRow === nextRow && queuedColumn === nextColumn)) {
         queue.push([nextRow, nextColumn]);
         activatedTiles.add(cellKey);
       }
@@ -304,7 +335,7 @@ export function resolveMatches(board, random = Math.random, preferredCell = null
   for (const cellKey of cleared) {
     const [row, column] = cellKey.split(",").map(Number);
     const tile = board[row][column];
-    if (!tile || tile.obstacle) continue;
+    if (!tile || tile.obstacle || tile.void) continue;
     for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
       if (board[row + dr]?.[column + dc]?.obstacle) obstacleDamage.add(key(row + dr, column + dc));
     }
@@ -340,9 +371,9 @@ export function resolveMatches(board, random = Math.random, preferredCell = null
   for (let column = 0; column < board[0].length; column += 1) {
     let bottom = board.length - 1;
     while (bottom >= 0) {
-      if (board[bottom][column]?.obstacle) { bottom -= 1; continue; }
+      if (board[bottom][column]?.obstacle || board[bottom][column]?.void) { bottom -= 1; continue; }
       let top = bottom;
-      while (top >= 0 && !board[top][column]?.obstacle) top -= 1;
+      while (top >= 0 && !board[top][column]?.obstacle && !board[top][column]?.void) top -= 1;
       const segmentTop = top + 1;
       const remaining = [];
       for (let row = bottom; row >= segmentTop; row -= 1) if (board[row][column]) remaining.push(board[row][column]);

@@ -7,6 +7,7 @@ import {
   createLevelBoard,
   countObstacles,
   getLevelConfig,
+  getLevelShape,
   createBoard,
   findMatches,
   findRuns,
@@ -243,4 +244,34 @@ test("activating a fish chooses a blocker-adjacent candy and damages its crate",
   assert.ok(Math.abs(fish.target[0] - 2) + Math.abs(fish.target[1] - 2) === 1);
   assert.equal(countObstacles(board), 0);
   assert.equal(result.obstaclesRemoved, 1);
+});
+
+
+test("level boards use stepped shapes with inert gaps", () => {
+  for (const level of [1, 50, 101, 351, 801, 2000]) {
+    const shape = getLevelShape(level);
+    const board = createLevelBoard(level);
+    assert.ok(shape.flat().some((open) => !open));
+    assert.ok(board.flat().some((tile) => tile?.void));
+    assert.equal(findMatches(board).size, 0);
+    assert.equal(hasPossibleMoves(board), true);
+    for (let row = 0; row < BOARD_SIZE; row += 1) {
+      for (let column = 0; column < BOARD_SIZE; column += 1) {
+        if (!shape[row][column]) assert.equal(board[row][column]?.void, true);
+      }
+    }
+  }
+});
+
+test("gravity refills within board sections without crossing stepped gaps", () => {
+  const board = createLevelBoard(50);
+  const gap = board.findIndex((row) => row.some((tile) => tile.void));
+  assert.ok(gap >= 0);
+  const voidRow = board[gap].findIndex((tile) => tile.void);
+  const above = board[gap - 1]?.[voidRow];
+  if (above && !above.obstacle && !above.void) {
+    const result = resolveMatches(board, () => 0, null, [[gap - 1, voidRow]]);
+    assert.ok(result);
+    assert.equal(board[gap][voidRow]?.void, true);
+  }
 });

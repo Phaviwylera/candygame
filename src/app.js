@@ -181,6 +181,14 @@ function render({ swapCells = [], invalidCells = [], swapOffsets = {}, fallOffse
     for (let column = 0; column < BOARD_SIZE; column += 1) {
       const index = row * BOARD_SIZE + column;
       const tile = state.board[row][column];
+      if (tile.void) {
+        const gap = document.createElement("div");
+        gap.className = "void-space";
+        gap.dataset.index = String(index);
+        gap.setAttribute("aria-hidden", "true");
+        fragment.append(gap);
+        continue;
+      }
       const button = document.createElement("button");
       button.type = "button";
       button.className = tile.obstacle ? `piece obstacle obstacle--${tile.kind ?? "crate"}` : `piece piece--${tile.type}`;

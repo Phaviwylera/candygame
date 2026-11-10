@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1280" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="dawn" x2="0" y2="1"><stop stop-color="#79c7df"/><stop offset=".38" stop-color="#d8e4cf"/><stop offset=".67" stop-color="#e8c696"/><stop offset="1" stop-color="#957264"/></linearGradient>
+    <linearGradient id="hillfar" x2="0" y2="1"><stop stop-color="#a7c9a0"/><stop offset="1" stop-color="#829d76"/></linearGradient>
+    <linearGradient id="hillnear" x2="0" y2="1"><stop stop-color="#7ea474"/><stop offset="1" stop-color="#55785e"/></linearGradient>
+    <linearGradient id="stone" x2="0" y2="1"><stop stop-color="#bc9277"/><stop offset=".45" stop-color="#98705f"/><stop offset="1" stop-color="#755951"/></linearGradient>
+    <linearGradient id="leaf" x2=".2" y2="1"><stop stop-color="#80c578"/><stop offset="1" stop-color="#397b55"/></linearGradient>
+    <linearGradient id="wall" x2="0" y2="1"><stop stop-color="#f4d9a7"/><stop offset="1" stop-color="#bb8966"/></linearGradient>
+    <linearGradient id="roof" x2="0" y2="1"><stop stop-color="#ca7457"/><stop offset="1" stop-color="#75464a"/></linearGradient>
+    <pattern id="stonework" width="74" height="42" patternUnits="userSpaceOnUse"><path d="M2 3h68l4 16-6 18H7L1 21Z" fill="#dfb397" fill-opacity=".13" stroke="#513e3b" stroke-opacity=".31" stroke-width="2"/><path d="M11 8h27" stroke="#f3d2b4" stroke-opacity=".22" stroke-width="2" stroke-linecap="round"/></pattern>
+    <filter id="soft"><feGaussianBlur stdDeviation="12"/></filter>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".62" numOctaves="2" seed="8"/><feColorMatrix type="saturate" values="0"/></filter>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="8"/></filter>
+  </defs>
+  <rect width="720" height="1280" fill="url(#dawn)"/>
+  <circle cx="553" cy="205" r="91" fill="#fff1c5" opacity=".36" filter="url(#soft)"/><circle cx="553" cy="205" r="37" fill="#fff0be" opacity=".53"/>
+  <g fill="#fff9e8" opacity=".38" filter="url(#soft)"><ellipse cx="130" cy="262" rx="153" ry="31"/><ellipse cx="555" cy="341" rx="169" ry="26"/></g>
+  <path d="M0 488c99-66 198-84 304-43 136 53 252 39 416-39v315H0Z" fill="#bdcfa7"/>
+  <path d="M0 562c117-86 211-68 336-4s250 49 384-43v306H0Z" fill="url(#hillfar)"/>
+  <path d="M0 717c125-94 224-56 329 12 116 74 249 64 391-35v586H0Z" fill="url(#hillnear)"/>
+  <!-- small distant village architecture -->
+  <g opacity=".78" transform="translate(198 501) scale(.56)"><path d="M5 75 103 4l99 71v120H5Z" fill="#e5cb9d"/><path d="m-7 78 110-88L213 78l-14 15L103 19 8 93Z" fill="#aa6652"/><rect x="37" y="102" width="35" height="50" rx="8" fill="#9bc6c2"/><rect x="131" y="102" width="35" height="50" rx="8" fill="#9bc6c2"/></g>
+  <g opacity=".63" transform="translate(458 547) scale(.47)"><path d="M5 75 103 4l99 71v120H5Z" fill="#ead7b1"/><path d="m-7 78 110-88L213 78l-14 15L103 19 8 93Z" fill="#986054"/><rect x="37" y="102" width="35" height="50" rx="8" fill="#9bc6c2"/><rect x="131" y="102" width="35" height="50" rx="8" fill="#9bc6c2"/></g>
+  <!-- warm, worn plaza stones below the play area -->
+  <path d="M0 837c147-80 252-30 351 8 130 50 240-22 369-43v478H0Z" fill="url(#stone)"/>
+  <path d="M0 837c147-80 252-30 351 8 130 50 240-22 369-43v478H0Z" fill="url(#stonework)" opacity=".95"/>
+  <path d="M0 1057c151-64 248 16 369 32s228-55 351-38v229H0Z" fill="#648052" opacity=".78"/>
+  <!-- orchard trees frame the sides and leave a clear central play lane -->
+  <g opacity=".94"><path d="M67 1020V777m64 244V831m453 190V788m65 229V826" stroke="#76533d" stroke-width="18" stroke-linecap="round"/><g fill="url(#leaf)" stroke="#4d7954" stroke-width="5"><circle cx="53" cy="781" r="57"/><circle cx="111" cy="744" r="67"/><circle cx="166" cy="796" r="58"/><circle cx="530" cy="788" r="65"/><circle cx="594" cy="740" r="66"/><circle cx="657" cy="788" r="58"/></g><g fill="#c7d58d" opacity=".42"><ellipse cx="88" cy="720" rx="22" ry="12" transform="rotate(-28 88 720)"/><ellipse cx="565" cy="713" rx="22" ry="12" transform="rotate(-28 565 713)"/><ellipse cx="632" cy="759" rx="18" ry="11" transform="rotate(22 632 759)"/></g><g fill="#d5ae68"><circle cx="77" cy="799" r="5"/><circle cx="146" cy="775" r="5"/><circle cx="559" cy="807" r="5"/><circle cx="620" cy="764" r="5"/></g></g>
+  <g opacity=".65" fill="#fff2d0"><circle cx="39" cy="1108" r="4"/><circle cx="218" cy="1180" r="3"/><circle cx="479" cy="1139" r="4"/><circle cx="686" cy="1086" r="3"/></g>
+  <rect width="720" height="1280" filter="url(#grain)" opacity=".055" style="mix-blend-mode:soft-light"/>
+</svg>

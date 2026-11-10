@@ -7,12 +7,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#8bd9f6">
-    <meta name="description" content="Gather starlight in Astra Grove, a little match-three puzzle beneath the night sky.">
+    <meta name="description" content="Swap glossy sweets, clear the board, and explore 2,000 levels in Sugar Valley.">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
-    <title>Astra Grove — A starlight puzzle</title>
+    <title>Sugar Valley — A sweet match-three puzzle</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -28,15 +28,16 @@
       <span class="orbit orbit--two"></span>
       <span class="glow glow--left"></span>
       <span class="glow glow--right"></span>
+      <span class="village-scene"></span>
     </div>
 
     <main class="game-shell">
       <header class="topbar">
-        <a class="brand" href="./" aria-label="Astra Grove home">
+        <a class="brand" href="./" aria-label="Sugar Valley home">
           <span class="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 40 40" fill="none"><path d="M20 3.5 23.8 15l11.7-3.8-7.2 10.1 10.2 7.1-12.2.1L23.8 40 20 28.5 8.3 32.3l7.2-10.1L5.3 15.1l12.2-.1L20 3.5Z" fill="currentColor"/><circle cx="20" cy="21.5" r="4.1" fill="#121521"/></svg>
+            <svg viewBox="0 0 40 40" fill="none"><path d="M12 8 5 3M28 8l7-5M12 32l-7 5m23-5 7 5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><rect x="9" y="7" width="22" height="26" rx="11" fill="currentColor"/><path d="M14 13c1-3 4-4 7-3" stroke="white" stroke-opacity=".8" stroke-width="2.3" stroke-linecap="round"/><ellipse cx="24" cy="17" rx="3" ry="2" fill="white" fill-opacity=".75"/></svg>
           </span>
-          <span class="brand-name">ASTRA <span>GROVE</span></span>
+          <span class="brand-name">SUGAR <span>VALLEY</span></span>
         </a>
         <div class="topbar-actions">
           <div class="best-score"><span class="best-star" aria-hidden="true">✦</span><span>BEST <strong id="best-score">0</strong></span></div>
@@ -51,11 +52,11 @@
       </header>
 
       <section class="intro" aria-labelledby="game-title">
-        <div class="town-banner"><span class="town-badge">LEVEL <strong id="level">1</strong></span><h1 id="game-title">Sunny <span>Grove</span></h1><span class="town-medal" aria-hidden="true">🌼</span></div>
+        <div class="town-banner"><span class="town-badge">LEVEL <strong id="level">1</strong></span><h1 id="game-title">Sugar <span>Valley</span></h1><span class="town-medal" aria-hidden="true">🍬</span></div>
         <p>Grow your little corner of joy</p>
       </section>
 
-      <section class="game-panel" aria-label="Astra Grove game">
+      <section class="game-panel" aria-label="Sugar Valley game">
         <div class="dashboard">
           <div class="resource-row">
             <div class="resource-pill heart-pill"><span aria-hidden="true">❤️</span><strong id="hearts">5/5</strong><small id="heart-clock">FULL</small></div>
@@ -74,15 +75,15 @@
             <div class="rail-goal rail-crates"><span class="rail-goal-icon crate-icon" aria-hidden="true">▦</span><strong id="rail-crates">0</strong><small>CRATES</small></div>
           </aside>
           <div class="board-wrap">
-          <div class="board" id="board" aria-label="Puzzle board"></div>
-          <div class="level-intro" id="level-intro" hidden aria-live="polite"><span class="intro-spark" aria-hidden="true">✦</span><p id="level-kind">EASY</p><h2>LEVEL <strong id="level-intro-number">1</strong></h2><span id="level-intro-moves">25 MOVES</span></div>
-          <div class="game-over" id="game-over" hidden>
-            <div class="result-sparkle" aria-hidden="true">✦</div>
-            <p class="result-kicker" id="result-kicker">THE GROVE IS GLOWING</p>
-            <h2 id="result-title">Beautifully done.</h2>
-            <p class="result-copy" id="result-copy">You gathered enough starlight.</p>
-            <button class="play-again" id="play-again" type="button">Continue <span aria-hidden="true">↗</span></button>
-          </div>
+            <div class="board" id="board" aria-label="Puzzle board"></div>
+            <div class="level-intro" id="level-intro" hidden aria-live="polite"><span class="intro-spark" aria-hidden="true">✦</span><p id="level-kind">EASY</p><h2>LEVEL <strong id="level-intro-number">1</strong></h2><span id="level-intro-moves">25 MOVES</span></div>
+            <div class="game-over" id="game-over" hidden>
+              <div class="result-sparkle" aria-hidden="true">✦</div>
+              <p class="result-kicker" id="result-kicker">THE GROVE IS GLOWING</p>
+              <h2 id="result-title">Beautifully done.</h2>
+              <p class="result-copy" id="result-copy">You gathered enough starlight.</p>
+              <button class="play-again" id="play-again" type="button">Continue <span aria-hidden="true">↗</span></button>
+            </div>
           </div>
         </div>
         <div class="bottom-stats">

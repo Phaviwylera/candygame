@@ -1410,3 +1410,38 @@ h1 { text-shadow:0 2px 0 #ae7250,0 4px 8px #355b7180; }
 @keyframes chocolate-crumble { 0%{opacity:1;transform:scale(1) rotate(0);filter:brightness(1)}25%{transform:scale(1.12) rotate(3deg);filter:brightness(1.7)}100%{opacity:0;transform:scale(.35) rotate(-11deg);filter:brightness(1.5)} }
 .bottom-stats { background:linear-gradient(#fff8e9,#ecd0a2); }
 @media (max-width:370px) { .board-wrap { padding:4px; } .board { gap:1px; padding:2px; } }
+
+/* Put gameplay first, as in the captured match screen. */
+.topbar { min-height:30px; justify-content:flex-end; }
+.topbar .brand,.intro { display:none; }
+.best-score,.best-score strong { color:#fff; text-shadow:0 1px 2px #31546c; }
+.resource-pill { min-height:28px; }
+.board-heading { min-height:23px; }
+.playfield-layout { grid-template-columns:56px minmax(0,1fr); gap:6px; }
+.board-wrap { border-radius:11px; }
+.piece:not(.obstacle) {
+  border-color:#dff9ff79;
+  background:linear-gradient(145deg,#a6d8e9b8 0%,#709db5c2 52%,#4c7893d9 100%);
+  box-shadow:inset 0 2px 2px #f5ffff73,inset 0 -3px 4px #173c576e,0 2px 1px #254e69;
+}
+.piece svg { filter:drop-shadow(0 3px 1px #1e3b56d9) drop-shadow(0 0 5px #fff8df96); }
+.obstacle.obstacle--chocolate {
+  border:2px solid #f4b977!important;
+  border-radius:5px!important;
+  background:linear-gradient(145deg,#71321f,#3c2023 58%,#2e1b25)!important;
+  box-shadow:inset 2px 2px 3px #ffd295,inset -3px -4px 5px #29191d,0 2px 1px #294d67!important;
+}
+.chocolate-art {
+  position:absolute;inset:6%;overflow:hidden;border:0;border-radius:4px;
+  background:radial-gradient(ellipse at 23% 20%,#e9a35c 0 9%,transparent 10%),radial-gradient(ellipse at 76% 26%,#d78342 0 10%,transparent 11%),linear-gradient(145deg,#a75b31,#572a25 65%,#382024);
+  box-shadow:inset 1px 1px 2px #ffd196a8,inset -2px -3px 4px #2b171c;
+}
+.chocolate-art::before { inset:9%;border-radius:4px;background:linear-gradient(145deg,#c1743c 0%,#89502e 37%,#63302a 72%,#3b2025);box-shadow:inset 1px 1px 2px #ffd18c,inset -2px -3px 4px #3b1d20; }
+.chocolate-art::after { left:14%;top:11%;width:28%;height:13%;border-radius:99px;background:#ffe5b5b3;filter:blur(1px);transform:rotate(-28deg); }
+.chocolate-art i { top:auto;bottom:auto;width:31%;height:34%;border:1px solid #e79a55;border-radius:3px;background:linear-gradient(145deg,#f2b361 0%,#b96332 28%,#70352c 76%,#4b2528);box-shadow:inset 1px 1px 2px #ffe0a5,inset -2px -2px 3px #4b2425,0 2px 1px #301a20; }
+.chocolate-art i:nth-child(1) { left:12%;top:12%; }
+.chocolate-art i:nth-child(2) { left:auto;right:12%;top:15%; }
+.chocolate-art i:nth-child(3) { left:34%;right:auto;top:auto;bottom:12%;width:34%;height:32%; }
+.obstacle--cracked .chocolate-art { filter:brightness(1.18) saturate(1.14); }
+.match-burst::before { background:radial-gradient(circle,#fff 0 4%,#fff9bf 11%,#ffe07ce8 24%,#ffb94f9e 43%,transparent 70%); }
+.piece.is-clearing svg { animation:candy-crush-pop 360ms cubic-bezier(.13,.82,.17,1) both; }

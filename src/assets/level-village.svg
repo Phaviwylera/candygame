@@ -23,9 +23,12 @@
  <!-- planter greenery framing the lower playfield -->
  <path d="M0 910c146-62 250-31 351 20 119 59 240 38 369-26v376H0Z" fill="#98775f"/>
  <path d="M0 910c146-62 250-31 351 20 119 59 240 38 369-26v376H0Z" fill="url(#grain)"/>
- <g fill="url(#leaf)" stroke="#467e59" stroke-width="4"><circle cx="41" cy="850" r="67"/><circle cx="103" cy="824" r="78"/><circle cx="167" cy="870" r="64"/><circle cx="551" cy="861" r="72"/><circle cx="617" cy="823" r="79"/><circle cx="681" cy="867" r="62"/></g>
- <g fill="#c0e28a" opacity=".7"><ellipse cx="77" cy="805" rx="23" ry="13" transform="rotate(-29 77 805)"/><ellipse cx="588" cy="792" rx="23" ry="13" transform="rotate(-25 588 792)"/><ellipse cx="650" cy="847" rx="19" ry="11" transform="rotate(18 650 847)"/></g>
- <g fill="#f7c05b"><circle cx="64" cy="882" r="5"/><circle cx="136" cy="840" r="5"/><circle cx="576" cy="895" r="5"/><circle cx="644" cy="833" r="5"/></g>
+ <g fill="url(#leaf)" opacity=".96">
+  <ellipse cx="24" cy="850" rx="29" ry="42" transform="rotate(-22 24 850)"/><ellipse cx="64" cy="834" rx="25" ry="38" transform="rotate(18 64 834)"/><ellipse cx="103" cy="858" rx="31" ry="43" transform="rotate(-13 103 858)"/><ellipse cx="144" cy="844" rx="24" ry="36" transform="rotate(26 144 844)"/>
+  <ellipse cx="532" cy="852" rx="30" ry="42" transform="rotate(18 532 852)"/><ellipse cx="575" cy="830" rx="25" ry="38" transform="rotate(-20 575 830)"/><ellipse cx="617" cy="855" rx="30" ry="44" transform="rotate(13 617 855)"/><ellipse cx="664" cy="836" rx="26" ry="37" transform="rotate(-22 664 836)"/>
+ </g>
+ <g fill="#c0e28a" opacity=".65"><ellipse cx="44" cy="815" rx="9" ry="4" transform="rotate(-29 44 815)"/><ellipse cx="120" cy="824" rx="10" ry="5" transform="rotate(-25 120 824)"/><ellipse cx="551" cy="813" rx="9" ry="4" transform="rotate(-25 551 813)"/><ellipse cx="639" cy="823" rx="10" ry="5" transform="rotate(18 639 823)"/></g>
+ <g fill="#f7c05b"><circle cx="55" cy="865" r="3.5"/><circle cx="132" cy="855" r="3.5"/><circle cx="569" cy="865" r="3.5"/><circle cx="643" cy="855" r="3.5"/></g>
  <path d="M0 1112c145-44 254 21 383 38s225-48 337-34v164H0Z" fill="#557c58" opacity=".85"/>
  <rect width="720" height="1280" fill="url(#grain)" opacity=".8"/>
 </svg>

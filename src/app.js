@@ -49,12 +49,14 @@ function loadProgress() {
   } catch { return { level: 1, coins: 250, hearts: HEART_CAP, heartAt: Date.now() }; }
 }
 const progressSave = loadProgress();
+const previewLevel = Number(new URLSearchParams(window.location.search).get("previewLevel"));
+const initialLevel = Number.isInteger(previewLevel) && previewLevel > 0 && previewLevel <= MAX_LEVEL ? previewLevel : progressSave.level;
 
 const state = {
-  board: createLevelBoard(progressSave.level),
+  board: createLevelBoard(initialLevel),
   score: 0,
-  moves: getLevelConfig(progressSave.level).moves,
-  level: progressSave.level,
+  moves: getLevelConfig(initialLevel).moves,
+  level: initialLevel,
   coins: progressSave.coins,
   hearts: progressSave.hearts,
   heartAt: progressSave.heartAt,

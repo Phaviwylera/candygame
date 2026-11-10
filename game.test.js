@@ -210,14 +210,26 @@ test("swaps the requested tiles in place", () => {
 
 test("creates 2,000 levels with four readable move-based difficulty bands", () => {
   assert.equal(MAX_LEVEL, 2000);
-  assert.deepEqual([1, 101, 351, 801].map((level) => getLevelConfig(level).difficulty), ["Easy", "Medium", "Hard", "Super Hard"]);
-  assert.deepEqual([1, 101, 351, 801].map((level) => getLevelConfig(level).moves), [25, 22, 19, 17]);
+  assert.deepEqual([1, 26, 50, 801].map((level) => getLevelConfig(level).difficulty), ["Easy", "Medium", "Hard", "Super Hard"]);
+  assert.deepEqual([1, 26, 50, 801].map((level) => getLevelConfig(level).moves), [25, 22, 21, 17]);
   assert.equal(getLevelConfig(2000).moves, 11);
   assert.equal(getLevelConfig(2001).level, 2000);
 });
 
+test("level 50 uses the reference's notched board and textured blocker set", () => {
+  const shape = getLevelShape(50);
+  assert.equal(shape[3][2], true);
+  assert.equal(shape[3][3], false);
+  const board = createLevelBoard(50);
+  assert.equal(countObstacles(board), getLevelConfig(50).obstacleCount);
+  assert.ok(board.flat().some((tile) => tile.obstacle && tile.kind === "chocolate"));
+  assert.ok(board.flat().some((tile) => tile.obstacle && tile.kind === "rope"));
+  assert.equal(findMatches(board).size, 0);
+  assert.equal(hasPossibleMoves(board), true);
+});
+
 test("level boards include destructible blockers while preserving a playable start", () => {
-  for (const level of [8, 101, 351, 801, 2000]) {
+  for (const level of [8, 26, 50, 801, 2000]) {
     const board = createLevelBoard(level);
     assert.equal(countObstacles(board), getLevelConfig(level).obstacleCount);
     assert.equal(findMatches(board).size, 0);

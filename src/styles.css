@@ -1326,4 +1326,87 @@ body { background:#496b61; }
 .level-intro h2 { font-size:clamp(1.7rem,7vw,2.3rem); color:#fff9e9; }
 .level-intro > span:last-child { border-color:#fff9e0; }
 .intro-spark { color:#fff7c4; }
+
+/* Reference-led township board: cool courtyard, inset blue cells, chocolate and rope blockers. */
+body {
+  min-height:100svh;
+  background:linear-gradient(180deg,#80c6e9 0%,#acd9e9 48%,#d9e5df 100%);
+}
+.sky::before,.sky::after { display:none; }
+.village-scene { filter:saturate(1.08) contrast(1.02); opacity:.94; }
+.game-shell { width:min(calc(100% - 14px),430px); filter:drop-shadow(0 7px 15px #31516d4f); }
+.brand-name,.brand-name span { color:#fffdf3; text-shadow:0 2px 2px #386482; }
+h1 { text-shadow:0 2px 0 #ae7250,0 4px 8px #355b7180; }
+.board-wrap {
+  padding:5px;
+  border:3px solid #f4fcff;
+  border-radius:12px;
+  background:linear-gradient(145deg,#b7eaff,#6db6d5 48%,#487eaa);
+  box-shadow:0 5px 0 #3b6987,0 10px 18px #315a7d72,inset 0 2px 3px #fff;
+}
+.board-wrap::before { border-color:#e7faffb3; border-radius:7px; background:linear-gradient(160deg,#e8fdff18,transparent 34%,#10385522); }
+.board {
+  gap:2px;
+  padding:3px;
+  border:2px solid #d7f3ff;
+  border-radius:7px;
+  background:linear-gradient(145deg,#668da9,#4b7897 68%,#3b6483);
+  box-shadow:inset 0 3px 9px #173e5a9c,0 1px #fff;
+}
+.piece:not(.obstacle) {
+  border:1px solid #d7f5ff63;
+  border-radius:4px;
+  background:linear-gradient(145deg,#a4d7e8a6,#6c9cb6b0 65%,#547f9a);
+  box-shadow:inset 0 2px 2px #effcff55,inset 0 -3px 4px #2349626e,0 1px 1px #294e68;
+}
+.piece svg {
+  width:100%;height:100%;
+  filter:drop-shadow(0 3px 1px #1b354cac) drop-shadow(0 0 4px #fff7d981);
+}
+.piece--0 { --candy-light:#ffdcff; --candy-main:#d329f4; --candy-dark:#7200a9; }
+.piece--1 { --candy-light:#d9fbff; --candy-main:#1aa5ff; --candy-dark:#064da3; }
+.piece--2 { --candy-light:#ffc9c5; --candy-main:#ff3434; --candy-dark:#a2001b; }
+.piece--3 { --candy-light:#d8ffad; --candy-main:#47d62b; --candy-dark:#146b19; }
+.piece--4 { --candy-light:#ffe3a5; --candy-main:#ff9819; --candy-dark:#a74803; }
+.piece--5 { --candy-light:#fffdb0; --candy-main:#ffd21b; --candy-dark:#c77e00; }
+.goal-rail { gap:5px; }
+.rail-goal {
+  min-height:52px;
+  border:2px solid #e7f7ff;
+  border-radius:11px;
+  background:linear-gradient(145deg,#d7f5ff,#87d4ec 54%,#5ba6d3);
+  box-shadow:0 3px 0 #34729e,inset 0 2px 3px #fff;
+  color:#174e77;
+  text-shadow:0 1px #fff;
+}
+.rail-goal-icon,.rail-crates .rail-goal-icon { color:#fff4c8;filter:drop-shadow(0 2px 1px #4d7293); }
+.rail-goal strong { color:#fff; text-shadow:0 2px 0 #3b6c8d; }
+.rail-goal small { color:#255c7b; font-size:5.5px; letter-spacing:.07em; }
+.move-meter {
+  min-height:104px;
+  border:3px solid #eafcff;
+  border-radius:13px;
+  background:linear-gradient(145deg,#70dcff,#318ed9 60%,#2869bb);
+  box-shadow:0 4px 0 #265b97,inset 0 2px 3px #fff, inset 0 -5px 8px #16498766;
+}
+.obstacle.obstacle--chocolate {
+  border:2px solid #ffd7a0!important;
+  border-radius:5px!important;
+  background:linear-gradient(145deg,#9e4726,#622b27 55%,#3b2025)!important;
+  box-shadow:inset 2px 2px 3px #ffc77d,inset -3px -4px 5px #301719,0 2px 1px #315570!important;
+}
+.chocolate-art { position:absolute;inset:8%;overflow:hidden;border:1px solid #e8a765;border-radius:3px;background:linear-gradient(145deg,#a6522c,#63302a 55%,#412229);box-shadow:inset 1px 1px 2px #ffd08b,inset -2px -3px 4px #30191c; }
+.chocolate-art::before { content:"";position:absolute;inset:12%;border-radius:3px;background:linear-gradient(145deg,#d37a3d 0%,#99502f 36%,#783628 72%,#47252a);box-shadow:inset 1px 1px 2px #f7bd73,inset -2px -2px 3px #4c2120; }
+.chocolate-art::after { content:"";position:absolute;left:16%;top:13%;width:36%;height:16%;border-radius:99px;background:#ffe4b681;filter:blur(1px);transform:rotate(-28deg); }
+.chocolate-art i { position:absolute;z-index:1;top:25%;bottom:25%;width:2px;background:#5c2829a6;box-shadow:1px 0 #f4b56b74; }
+.chocolate-art i:nth-child(1) { left:37%; }.chocolate-art i:nth-child(2) { left:63%; }
+.chocolate-art i:nth-child(3) { left:11%;right:11%;top:51%;bottom:auto;width:auto;height:2px; }
+.obstacle--cracked .chocolate-art { filter:brightness(1.14) saturate(1.1); }
+.rope-art { position:absolute;inset:0;overflow:hidden; }
+.rope-art i { position:absolute;left:-30%;top:42%;width:160%;height:16%;border:1px solid #fce08b;background:repeating-linear-gradient(90deg,#3079bd 0 4px,#54c5e9 4px 7px,#f1c356 7px 9px);box-shadow:0 2px 2px #3a2d30;transform:rotate(43deg); }
+.rope-art i:last-child { transform:rotate(-43deg); }
+.ice-art { border-color:#e2fdff; background:linear-gradient(145deg,#faffffe8,#8be8f5e0 58%,#4e9ed1);box-shadow:inset 2px 2px 4px #fff,inset -3px -4px 5px #397ca6aa,0 2px 1px #315d78; }
+.obstacle.is-clearing { animation:chocolate-crumble 380ms cubic-bezier(.2,.7,.1,1) both!important; }
+@keyframes chocolate-crumble { 0%{opacity:1;transform:scale(1) rotate(0);filter:brightness(1)}25%{transform:scale(1.12) rotate(3deg);filter:brightness(1.7)}100%{opacity:0;transform:scale(.35) rotate(-11deg);filter:brightness(1.5)} }
+.bottom-stats { background:linear-gradient(#fff8e9,#ecd0a2); }
 @media (max-width:370px) { .board-wrap { padding:4px; } .board { gap:1px; padding:2px; } }

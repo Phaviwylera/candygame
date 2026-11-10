@@ -12,17 +12,17 @@ function makeTile(type, special = null) {
 
 export function getLevelConfig(level) {
   const current = Math.max(1, Math.min(MAX_LEVEL, Math.floor(level)));
-  if (current <= 100) {
-    const progress = (current - 1) / 99;
-    return { level: current, difficulty: "Easy", moves: 25, scoreGoal: Math.round(420 + progress * 200), obstacleCount: current < 8 ? 0 : Math.floor(progress * 3) + 1 };
+  if (current <= 25) {
+    const progress = (current - 1) / 24;
+    return { level: current, difficulty: "Easy", moves: 25, scoreGoal: Math.round(420 + progress * 120), obstacleCount: 2 + Math.floor(progress * 2) };
   }
-  if (current <= 350) {
-    const progress = (current - 101) / 249;
-    return { level: current, difficulty: "Medium", moves: 22, scoreGoal: Math.round(620 + progress * 160), obstacleCount: 2 + Math.floor(progress * 2) };
+  if (current <= 49) {
+    const progress = (current - 26) / 23;
+    return { level: current, difficulty: "Medium", moves: 22, scoreGoal: Math.round(540 + progress * 140), obstacleCount: 4 + Math.floor(progress * 2) };
   }
   if (current <= 800) {
-    const progress = (current - 351) / 449;
-    return { level: current, difficulty: "Hard", moves: 19, scoreGoal: Math.round(780 + progress * 170), obstacleCount: 4 + Math.floor(progress * 3) };
+    const progress = (current - 50) / 750;
+    return { level: current, difficulty: "Hard", moves: 21 - Math.floor(progress * 3), scoreGoal: Math.round(700 + progress * 250), obstacleCount: 7 + Math.floor(progress * 5) };
   }
   const progress = (current - 801) / (MAX_LEVEL - 801);
   return { level: current, difficulty: "Super Hard", moves: 17 - Math.floor(progress * 6), scoreGoal: Math.round(900 + progress * 250), obstacleCount: 7 + Math.floor(progress * 7) };
@@ -33,16 +33,16 @@ export function countObstacles(board) {
 }
 
 const SHAPES = [
-  [".######.", "########", "########", "########", "########", "########", ".######.", "..####.."],
-  ["..####..", ".######.", "########", "########", "########", "########", ".######.", "..####.."],
-  [".######.", "########", "########", "########", "..######", "...#####", "...#####", "....####"],
-  ["########", "##..####", "########", "########", "########", "####..##", "########", "########"]
+  [".######.", "########", "########", "###..###", "###..###", "########", "########", ".######."],
+  ["########", "########", "########", "###..###", "###..###", "########", "###..###", "########"],
+  [".######.", "########", "########", "##....##", "##....##", "########", "###..###", "###..###"],
+  ["########", "##..####", "########", "###..###", "########", "###..###", "########", "####..##"]
 ];
 
 export function getLevelShape(level, size = BOARD_SIZE) {
   const current = Math.max(1, Math.floor(level));
   const config = getLevelConfig(current);
-  const templateIndex = current < 5 ? 1 : ((current * 7 + Math.floor(current / 25)) % SHAPES.length);
+  const templateIndex = current < 5 || current === 50 ? 1 : ((current * 7 + Math.floor(current / 25)) % SHAPES.length);
   const template = SHAPES[templateIndex];
   return Array.from({ length: size }, (_, row) =>
     Array.from({ length: size }, (_, column) => {
@@ -210,15 +210,16 @@ export function createLevelBoard(levelOrConfig, random = Math.random, size = BOA
       }
     }
     const ordered = [...cells].sort((a, b) => {
-      const rank = ([row, column]) => ((row * 37 + column * 19 + config.level * 13 + attempt * 29) % 101);
+      const anchor = [Math.floor(size / 2), Math.floor(size / 2) - 2];
+      const rank = ([row, column]) => (Math.abs(row - anchor[0]) + Math.abs(column - anchor[1])) * 100 + ((row * 37 + column * 19 + config.level * 13 + attempt * 29) % 97);
       return rank(a) - rank(b);
     });
-    ordered.slice(0, config.obstacleCount).forEach(([row, column]) => {
+    ordered.slice(0, config.obstacleCount).forEach(([row, column], index) => {
       board[row][column] = {
         type: null,
         special: null,
         obstacle: true,
-        kind: config.level >= 351 && (row + column) % 3 === 0 ? "ice" : config.level >= 101 && (row + column) % 3 === 1 ? "rope" : "crate",
+        kind: config.level >= 351 && (row + column) % 3 === 0 ? "ice" : config.level >= 25 && (index % 3 === 1 || (row + column) % 4 === 0) ? "rope" : "chocolate",
         hits: config.difficulty === "Super Hard" && config.level >= 1200 && (row + column + config.level) % 3 === 0 ? 2 : 1
       };
     });

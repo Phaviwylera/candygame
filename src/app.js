@@ -167,7 +167,7 @@ function formatScore(score) {
 }
 
 function cellLabel(tile, row, column) {
-  if (tile.obstacle) return `Wooden crate, ${tile.hits} hits remaining, row ${row + 1}, column ${column + 1}`;
+  if (tile.obstacle) return `${tile.kind === "rope" ? "Rope-bound candy" : tile.kind === "ice" ? "Iced candy" : "Chocolate blocker"}, ${tile.hits} hits remaining, row ${row + 1}, column ${column + 1}`;
   const piece = pieceNames[tile.type];
   const special = tile.special
     ? `, ${tile.special === "wild" ? "starlight" : `line-clearing ${tile.special}`} special`
@@ -209,7 +209,7 @@ function render({ swapCells = [], invalidCells = [], swapOffsets = {}, fallOffse
       if (tile.special) button.classList.add(`is-special`, `is-special-${tile.special}`);
       button.dataset.index = String(index);
       button.setAttribute("aria-label", cellLabel(tile, row, column));
-      button.innerHTML = tile.obstacle ? tile.kind === "ice" ? '<span class="ice-art" aria-hidden="true"><i></i></span>' : tile.kind === "rope" ? '<span class="rope-art" aria-hidden="true"><i></i><i></i></span>' : '<span class="obstacle-art" aria-hidden="true"><i></i><i></i><i></i></span>' : `${pieceIcons[tile.type]}${tile.special ? `<span class="special-mark" aria-hidden="true">${tile.special === "bomb" ? "✹" : tile.special === "fish" ? "≈" : tile.special === "row" ? "↔" : tile.special === "column" ? "↕" : "✦"}</span>` : ""}`;
+      button.innerHTML = tile.obstacle ? tile.kind === "ice" ? '<span class="ice-art" aria-hidden="true"><i></i></span>' : tile.kind === "rope" ? '<span class="rope-art" aria-hidden="true"><i></i><i></i></span>' : '<span class="chocolate-art" aria-hidden="true"><i></i><i></i><i></i></span>' : `${pieceIcons[tile.type]}${tile.special ? `<span class="special-mark" aria-hidden="true">${tile.special === "bomb" ? "✹" : tile.special === "fish" ? "≈" : tile.special === "row" ? "↔" : tile.special === "column" ? "↕" : "✦"}</span>` : ""}`;
       fragment.append(button);
     }
   }
